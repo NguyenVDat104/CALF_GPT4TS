@@ -1,3 +1,13 @@
+---
+title: CALF Time Series Forecasting
+emoji: 📈
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Taming Pre-trained LLMs for Generalized Time Series Forecasting through Cross-modal Knowledge Distillation
 
 [![](http://img.shields.io/badge/cs.LG-arXiv%3A2403.07300-B31B1B.svg)](https://arxiv.org/abs/2403.07300)

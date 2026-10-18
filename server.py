@@ -381,21 +381,31 @@ async def serve_frontend_assets(file_name: str):
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.environ.get("PORT", "8443"))
     cert_file = os.path.join(SSL_DIR, "cert.pem")
     key_file = os.path.join(SSL_DIR, "key.pem")
+    use_ssl = os.path.exists(cert_file) and os.path.exists(key_file) and port == 8443
     
     print("\n" + "="*70)
-    print("🚀 STARTING CALF FORECASTING FULL-STACK HTTPS SERVER")
-    print(f"🔒 HTTPS URL: https://localhost:8443/")
+    print("🚀 STARTING CALF FORECASTING FULL-STACK SERVER")
+    print(f"📡 Port: {port} | SSL Enabled: {use_ssl}")
     print(f"📁 Datasets: {CUSTOM_DATASETS_DIR}")
-    print(f"📜 SSL Certificate: {cert_file}")
     print("="*70 + "\n")
     
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=8443,
-        ssl_certfile=cert_file,
-        ssl_keyfile=key_file,
-        reload=False
-    )
+    if use_ssl:
+        uvicorn.run(
+            "server:app",
+            host="0.0.0.0",
+            port=port,
+            ssl_certfile=cert_file,
+            ssl_keyfile=key_file,
+            reload=False
+        )
+    else:
+        uvicorn.run(
+            "server:app",
+            host="0.0.0.0",
+            port=port,
+            reload=False
+        )
+

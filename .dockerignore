@@ -1,0 +1,13 @@
+.git
+.gitignore
+.vscode
+.idea
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+cloudflared.exe
+*.bat
+ssl/
+results/
+checkpoints/

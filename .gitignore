@@ -35,6 +35,9 @@ bs_results.txt
 ssl/
 *.pem
 
-# OS generated
+# OS generated & Binaries
 .DS_Store
 Thumbs.db
+cloudflared.exe
+*.exe
+
