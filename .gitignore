@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+ENV/
+
+# IDE & Editor
+.vscode/
+.idea/
+
+# Datasets
+datasets/
+data/
+*.csv
+
+# Model Checkpoints & Large weights
+checkpoints/
+*.pth
+*.pt
+!wte_pca_500.pt
+
+# Experiment numerical results & cache
+results/
+bootstrap/
+*.npy
+results_*.txt
+bs_results.txt
+*.log
+
+# OS generated
+.DS_Store
+Thumbs.db
