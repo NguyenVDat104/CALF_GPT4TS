@@ -16,12 +16,14 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy source code and assets
 COPY --chown=user . /app
 
-# Ensure proper permissions
-RUN chmod -R 777 /app/datasets
+# Ensure datasets directory exists and set permissions
+RUN mkdir -p /app/datasets/custom && chmod -R 777 /app/datasets
 
 USER user
 
-# Hugging Face default port
+# Default port
 EXPOSE 7860
+EXPOSE 10000
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["sh", "-c", "uvicorn server:app --host 0.0.0.0 --port ${PORT:-7860}"]
+
