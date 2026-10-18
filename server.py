@@ -20,8 +20,16 @@ DATASETS_DIR = os.path.join(BASE_DIR, "datasets")
 CUSTOM_DATASETS_DIR = os.path.join(DATASETS_DIR, "custom")
 SSL_DIR = os.path.join(BASE_DIR, "ssl")
 
-os.makedirs(CUSTOM_DATASETS_DIR, exist_ok=True)
-os.makedirs(SSL_DIR, exist_ok=True)
+try:
+    os.makedirs(CUSTOM_DATASETS_DIR, exist_ok=True)
+except Exception:
+    pass
+
+try:
+    os.makedirs(SSL_DIR, exist_ok=True)
+except Exception:
+    pass
+
 
 app = FastAPI(
     title="CALF Forecasting API",

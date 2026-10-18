@@ -16,10 +16,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy source code and assets
 COPY --chown=user . /app
 
-# Ensure datasets directory exists and set permissions
-RUN mkdir -p /app/datasets/custom && chmod -R 777 /app/datasets
+# Create runtime directories and grant ownership
+RUN mkdir -p /app/datasets/custom /app/ssl && \
+    chown -R user:user /app && \
+    chmod -R 777 /app
 
 USER user
+
 
 # Default port
 EXPOSE 7860
