@@ -430,17 +430,23 @@ async def upload_dataset(file: UploadFile = File(...)):
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
+NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
+}
+
 @app.get("/")
 async def serve_index():
     index_file = os.path.join(FRONTEND_DIR, "index.html")
-    return FileResponse(index_file)
+    return FileResponse(index_file, headers=NO_CACHE_HEADERS)
 
 @app.get("/{file_name}")
 async def serve_frontend_assets(file_name: str):
     asset_file = os.path.join(FRONTEND_DIR, file_name)
     if os.path.exists(asset_file) and os.path.isfile(asset_file):
-        return FileResponse(asset_file)
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+        return FileResponse(asset_file, headers=NO_CACHE_HEADERS)
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"), headers=NO_CACHE_HEADERS)
 
 if __name__ == "__main__":
     import uvicorn
