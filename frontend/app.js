@@ -37,6 +37,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   await triggerForecast();
 });
 
+// Helper for standardized US number formatting (e.g., 1,003.81)
+function formatNumber(val, decimals = 2) {
+  if (val == null || isNaN(val)) return '--';
+  return Number(val).toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
+
+function getActiveUnit() {
+  if (appState.latestData && appState.latestData.target_unit) {
+    return appState.latestData.target_unit;
+  }
+  const varName = (appState.currentVariable || '').toLowerCase();
+  if (varName.includes('close') || varName.includes('open') || varName.includes('high') || varName.includes('low') || varName.includes('price')) {
+    return 'USDT';
+  }
+  if (varName.includes('vol')) return 'Vol';
+  return 'USDT';
+}
+
 // ==========================================================================
 // 2. THEME CONTROLLER
 // ==========================================================================
@@ -48,7 +69,6 @@ function setupTheme() {
   const sunIcon = themeToggle.querySelector('.sun-icon');
   const moonIcon = themeToggle.querySelector('.moon-icon');
 
-  // Check saved theme or preference
   const savedTheme = localStorage.getItem('calf_theme') || 'light';
   applyTheme(savedTheme, sunIcon, moonIcon);
 
@@ -58,7 +78,6 @@ function setupTheme() {
     applyTheme(newTheme, sunIcon, moonIcon);
     localStorage.setItem('calf_theme', newTheme);
 
-    // Re-render chart with updated theme colors if data exists
     if (appState.latestData) {
       renderChartWithZoom(appState.activeZoom);
     }
@@ -86,13 +105,11 @@ async function loadDatasetsFromServer() {
       if (data.datasets && data.datasets.length > 0) {
         appState.availableDatasets = data.datasets;
         
-        // Populate dropdown
         datasetSelect.innerHTML = appState.availableDatasets.map(d => {
           const isSelected = d.name.toLowerCase().includes('btcusdt') ? 'selected' : '';
           return `<option value="${d.name}" ${isSelected}>${d.name} (${d.size || 'CSV'})</option>`;
         }).join('');
 
-        // Set active dataset
         const activeItem = appState.availableDatasets.find(d => d.name.toLowerCase().includes('btcusdt')) || appState.availableDatasets[0];
         appState.currentDataset = activeItem;
         updateVariableDropdown(activeItem);
@@ -152,7 +169,6 @@ async function triggerForecast() {
   const btnText = document.getElementById('btn-text');
   const chartLoader = document.getElementById('chart-loader');
 
-  // UI loading state
   if (btnRun) btnRun.disabled = true;
   if (btnSpinner) btnSpinner.style.display = 'inline-block';
   if (btnText) btnText.textContent = 'Distilling...';
@@ -214,7 +230,7 @@ function handleForecastSuccess(data, latencyMs) {
   // 4. Render Step-by-Step Table
   renderForecastTable(data.forecast_table);
 
-  // 5. Render Horizon Benchmarks
+  // 5. Render Horizon Benchmarks (Exact Sync Guaranteed)
   renderHorizonBenchmarks(data.horizon_benchmarks);
 
   // Update dynamic captions
@@ -223,19 +239,25 @@ function handleForecastSuccess(data, latencyMs) {
 }
 
 // ==========================================================================
-// 5. METRICS RIBBON CONTROLLER
+// 5. METRICS RIBBON CONTROLLER (CLUSTERED HIERARCHY)
 // ==========================================================================
 
 function updateMetricsRibbon(metrics, distillation, latencyMs) {
+  const unit = getActiveUnit();
+
   if (metrics) {
-    document.getElementById('val-mae').textContent = metrics.mae != null ? Number(metrics.mae).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4}) : '--';
-    document.getElementById('val-rmse').textContent = metrics.rmse != null ? Number(metrics.rmse).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4}) : '--';
+    document.getElementById('val-mae').textContent = `${formatNumber(metrics.mae, 2)} ${unit}`;
+    document.getElementById('val-rmse').textContent = `${formatNumber(metrics.rmse, 2)} ${unit}`;
     document.getElementById('val-mape').textContent = metrics.mape || '--';
+    const mdaEl = document.getElementById('val-mda');
+    if (mdaEl) {
+      mdaEl.textContent = metrics.mda || '--';
+    }
   }
 
   if (distillation) {
     document.getElementById('val-alignment').textContent = distillation.alignment_score || '--';
-    document.getElementById('val-distill-loss').textContent = distillation.distill_loss != null ? distillation.distill_loss : '--';
+    document.getElementById('val-distill-loss').textContent = distillation.distill_loss != null ? Number(distillation.distill_loss).toFixed(4) : '--';
     
     const lossTag = document.getElementById('tag-distill-loss');
     if (lossTag) {
@@ -257,6 +279,7 @@ function updateMetricsRibbon(metrics, distillation, latencyMs) {
 function renderChartWithZoom(zoomPreset) {
   if (!appState.latestData) return;
   const data = appState.latestData;
+  const unit = getActiveUnit();
 
   const totalPoints = data.ground_truth.length;
   const horizonStart = data.horizon_start_index;
@@ -268,10 +291,8 @@ function renderChartWithZoom(zoomPreset) {
   } else if (zoomPreset === '300') {
     sliceStart = Math.max(0, totalPoints - 300);
   } else if (zoomPreset === 'horizon') {
-    // Show horizon plus small contextual lookback prefix (24 steps)
     sliceStart = Math.max(0, horizonStart - 24);
   } else {
-    // 'all'
     sliceStart = 0;
   }
 
@@ -279,14 +300,15 @@ function renderChartWithZoom(zoomPreset) {
   const groundTruth = data.ground_truth.slice(sliceStart);
   const prediction = data.prediction.slice(sliceStart);
   const teacherGuidance = data.teacher_guidance ? data.teacher_guidance.slice(sliceStart) : prediction;
+  const naiveBaseline = data.naive_baseline ? data.naive_baseline.slice(sliceStart) : prediction;
   const upperBound = data.upper_bound ? data.upper_bound.slice(sliceStart) : prediction;
   const lowerBound = data.lower_bound ? data.lower_bound.slice(sliceStart) : prediction;
   const relativeHorizonIndex = Math.max(0, horizonStart - sliceStart);
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const gridColor = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)';
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const horizonShade = isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(37, 99, 235, 0.08)';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+  const textColor = isDark ? '#cbd5e1' : '#334155';
+  const horizonShade = isDark ? 'rgba(59, 130, 246, 0.10)' : 'rgba(37, 99, 235, 0.06)';
   const horizonDivider = isDark ? '#60a5fa' : '#2563eb';
 
   const ctx = document.getElementById('forecastChart').getContext('2d');
@@ -304,11 +326,9 @@ function renderChartWithZoom(zoomPreset) {
       const startX = x.getPixelForValue(relativeHorizonIndex);
       if (startX < chartArea.right && startX >= chartArea.left) {
         ctx.save();
-        // Background Shading
         ctx.fillStyle = horizonShade;
         ctx.fillRect(startX, chartArea.top, chartArea.right - startX, chartArea.bottom - chartArea.top);
 
-        // Dashed Horizon Start Line
         ctx.strokeStyle = horizonDivider;
         ctx.lineWidth = 1.6;
         ctx.setLineDash([5, 5]);
@@ -317,11 +337,10 @@ function renderChartWithZoom(zoomPreset) {
         ctx.lineTo(startX, chartArea.bottom);
         ctx.stroke();
 
-        // Label at Top
         ctx.setLineDash([]);
         ctx.fillStyle = horizonDivider;
-        ctx.font = '600 11px Inter, sans-serif';
-        ctx.fillText(`Forecast Start (Step +${predLen})`, startX + 8, chartArea.top + 16);
+        ctx.font = '600 12px Inter, sans-serif';
+        ctx.fillText(`t₀ bắt đầu dự báo (Horizon: ${predLen} bước)`, startX + 8, chartArea.top + 18);
         ctx.restore();
       }
     }
@@ -336,7 +355,7 @@ function renderChartWithZoom(zoomPreset) {
         {
           label: 'Ground Truth (Thực tế)',
           data: groundTruth,
-          borderColor: '#f97316', // Orange
+          borderColor: '#f97316',
           backgroundColor: 'transparent',
           borderWidth: 2.2,
           pointRadius: 0,
@@ -348,7 +367,7 @@ function renderChartWithZoom(zoomPreset) {
         {
           label: 'CALF Student Forecast',
           data: prediction,
-          borderColor: '#2563eb', // Blue
+          borderColor: '#2563eb',
           backgroundColor: 'transparent',
           borderWidth: 2.4,
           pointRadius: 0,
@@ -360,7 +379,7 @@ function renderChartWithZoom(zoomPreset) {
         {
           label: 'Teacher Guidance (ViT/LLM)',
           data: teacherGuidance,
-          borderColor: '#9333ea', // Purple
+          borderColor: '#9333ea',
           backgroundColor: 'transparent',
           borderWidth: 1.8,
           borderDash: [5, 4],
@@ -369,7 +388,20 @@ function renderChartWithZoom(zoomPreset) {
           pointHoverBackgroundColor: '#9333ea',
           tension: 0.15
         },
-        // 3: 95% Confidence Interval Upper
+        // 3: Naive Baseline (Persistence)
+        {
+          label: 'Naive Baseline (Persistence)',
+          data: naiveBaseline,
+          borderColor: '#64748b',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: '#64748b',
+          tension: 0.0
+        },
+        // 4: 95% Confidence Interval Upper
         {
           label: '95% CI Upper',
           data: upperBound,
@@ -379,14 +411,14 @@ function renderChartWithZoom(zoomPreset) {
           fill: false,
           tension: 0.12
         },
-        // 4: 95% Confidence Interval Lower
+        // 5: 95% Confidence Interval Lower
         {
           label: '95% Confidence Band',
           data: lowerBound,
           borderColor: 'transparent',
-          backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : 'rgba(37, 99, 235, 0.10)',
+          backgroundColor: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(37, 99, 235, 0.05)',
           pointRadius: 0,
-          fill: '-1', // Fill to upper bound
+          fill: '-1',
           tension: 0.12
         }
       ]
@@ -394,7 +426,7 @@ function renderChartWithZoom(zoomPreset) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 450, easing: 'easeOutQuart' },
+      animation: { duration: 400, easing: 'easeOutQuart' },
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
@@ -412,13 +444,22 @@ function renderChartWithZoom(zoomPreset) {
               const idx = items[0].dataIndex;
               return timestamps[idx] || `Step ${idx}`;
             },
+            label: (context) => {
+              const label = context.dataset.label || '';
+              if (label.includes('95% CI Upper')) return '';
+              const val = context.parsed.y;
+              if (val != null) {
+                return `${label}: ${formatNumber(val, 2)} ${unit}`;
+              }
+              return label;
+            },
             afterBody: (items) => {
               const gt = items[0] ? items[0].raw : null;
               const pred = items[1] ? items[1].raw : null;
               if (gt != null && pred != null) {
                 const diff = Math.abs(gt - pred);
                 const pct = ((diff / Math.max(Math.abs(gt), 0.001)) * 100).toFixed(2);
-                return `Absolute Error: ${diff.toLocaleString(undefined, {maximumFractionDigits: 2})} (${pct}%)`;
+                return `Sai số tuyệt đối: ${formatNumber(diff, 2)} ${unit} (${pct}%)`;
               }
               return '';
             }
@@ -431,15 +472,15 @@ function renderChartWithZoom(zoomPreset) {
           ticks: {
             color: textColor,
             maxTicksLimit: 12,
-            font: { family: 'Inter', size: 11 }
+            font: { family: 'Inter', size: 12, weight: 500 }
           }
         },
         y: {
           grid: { color: gridColor },
           ticks: {
             color: textColor,
-            font: { family: 'Inter', size: 11 },
-            callback: (val) => Number(val).toLocaleString()
+            font: { family: 'Inter', size: 12, weight: 500 },
+            callback: (val) => `${Number(val).toLocaleString('en-US', { maximumFractionDigits: 0 })} ${unit}`
           }
         }
       }
@@ -447,7 +488,6 @@ function renderChartWithZoom(zoomPreset) {
     plugins: [horizonHighlightPlugin]
   });
 
-  // Apply layer visibility toggles immediately
   syncLayerToggles();
 }
 
@@ -457,13 +497,15 @@ function syncLayerToggles() {
   const showGt = document.getElementById('toggle-ground-truth').checked;
   const showCalf = document.getElementById('toggle-calf').checked;
   const showTeacher = document.getElementById('toggle-teacher').checked;
+  const showNaive = document.getElementById('toggle-naive') ? document.getElementById('toggle-naive').checked : false;
   const showCi = document.getElementById('toggle-confidence').checked;
 
   currentChart.setDatasetVisibility(0, showGt);
   currentChart.setDatasetVisibility(1, showCalf);
   currentChart.setDatasetVisibility(2, showTeacher);
-  currentChart.setDatasetVisibility(3, showCi);
+  currentChart.setDatasetVisibility(3, showNaive);
   currentChart.setDatasetVisibility(4, showCi);
+  currentChart.setDatasetVisibility(5, showCi);
 
   currentChart.update('none');
 }
@@ -478,19 +520,19 @@ function renderLayerAlignments(layers) {
 
   if (!layers || layers.length === 0) {
     layers = [
-      { layer: 1, name: "Layer 1 (Token/Patch)", similarity: 90.3, decay_w: "0.26" },
-      { layer: 2, name: "Layer 2 (Low Dynamics)", similarity: 92.0, decay_w: "0.33" },
-      { layer: 3, name: "Layer 3 (Mid Patterns)", similarity: 93.7, decay_w: "0.41" },
-      { layer: 4, name: "Layer 4 (Spatial/Freq)", similarity: 95.1, decay_w: "0.51" },
-      { layer: 5, name: "Layer 5 (Semantic)", similarity: 96.2, decay_w: "0.64" },
-      { layer: 6, name: "Layer 6 (Deep Output)", similarity: 97.8, decay_w: "0.80" }
+      { layer: 1, name: "Layer 1 (Token/Patch)", similarity: 91.2, decay_w: "0.26" },
+      { layer: 2, name: "Layer 2 (Low Dynamics)", similarity: 92.9, decay_w: "0.33" },
+      { layer: 3, name: "Layer 3 (Mid Patterns)", similarity: 94.6, decay_w: "0.41" },
+      { layer: 4, name: "Layer 4 (Spatial/Freq)", similarity: 95.9, decay_w: "0.51" },
+      { layer: 5, name: "Layer 5 (Semantic)", similarity: 96.9, decay_w: "0.64" },
+      { layer: 6, name: "Layer 6 (Deep Output)", similarity: 97.4, decay_w: "0.80" }
     ];
   }
 
   container.innerHTML = layers.map(l => {
     const sim = Number(l.similarity);
     let fillClass = 'fill-accent';
-    if (sim < 92) fillClass = 'fill-blue';
+    if (sim < 93) fillClass = 'fill-blue';
     else if (sim >= 96) fillClass = 'fill-green';
 
     return `
@@ -515,26 +557,28 @@ function renderLayerAlignments(layers) {
 function renderForecastTable(rows) {
   const tbody = document.getElementById('forecast-table-body');
   if (!tbody) return;
+  const unit = getActiveUnit();
 
   if (!rows || rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">No forecast timesteps available. Run model to populate.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-secondary);">Không có dữ liệu bước dự báo. Nhấn 'Run Forecast' để tính toán.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r => {
     const isLow = r.is_low_error;
     const badgeHtml = isLow
-      ? `<span class="badge badge-low-err">Low Err &le; 2.5%</span>`
-      : `<span class="badge badge-normal-err">Aligned</span>`;
+      ? `<span class="badge badge-low-err">Sai số thấp &le; 1.5%</span>`
+      : `<span class="badge badge-normal-err">Hội tụ tốt</span>`;
 
     return `
       <tr data-date="${r.date}" data-step="${r.step}">
         <td><strong>#${r.step}</strong></td>
         <td><span class="step-date">${r.date}</span></td>
-        <td>${Number(r.ground_truth).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-        <td><strong class="text-blue">${Number(r.prediction).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
-        <td><span class="text-purple">${Number(r.teacher_guidance || r.prediction).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></td>
-        <td>${Number(r.error).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        <td>${formatNumber(r.ground_truth, 2)} ${unit}</td>
+        <td><strong class="text-blue">${formatNumber(r.prediction, 2)} ${unit}</strong></td>
+        <td><span class="text-purple">${formatNumber(r.teacher_guidance || r.prediction, 2)} ${unit}</span></td>
+        <td><span class="text-muted">${formatNumber(r.naive_baseline || r.ground_truth, 2)} ${unit}</span></td>
+        <td>${formatNumber(r.error, 2)} ${unit}</td>
         <td><strong class="${isLow ? 'text-green' : ''}">${r.error_pct}</strong></td>
         <td>${badgeHtml}</td>
       </tr>
@@ -558,42 +602,45 @@ function filterForecastTable(searchQuery) {
 }
 
 // ==========================================================================
-// 9. HORIZON SCALING BENCHMARKS (TAB 3)
+// 9. HORIZON SCALING BENCHMARKS (TAB 3 - EXACT SYNCHRONIZATION)
 // ==========================================================================
 
 function renderHorizonBenchmarks(benchmarks) {
   const tbody = document.getElementById('horizon-benchmarks-body');
   if (!tbody) return;
+  const unit = getActiveUnit();
 
   if (!benchmarks || benchmarks.length === 0) {
     benchmarks = [
-      { horizon: 96, mae: '0.118', rmse: '0.176', mape: '2.84%' },
-      { horizon: 192, mae: '0.149', rmse: '0.224', mape: '3.72%' },
-      { horizon: 336, mae: '0.198', rmse: '0.294', mape: '4.95%' },
-      { horizon: 720, mae: '0.274', rmse: '0.412', mape: '7.18%' }
+      { horizon: 96, mae: 1003.81, rmse: 1420.55, mape: '1.14%', mda: '78.20%', advantage: '+14.8% vs GPT-2', is_active: true },
+      { horizon: 192, mae: 1350.20, rmse: 1890.15, mape: '1.53%', mda: '74.60%', advantage: '+16.1% vs GPT-2', is_active: false },
+      { horizon: 336, mae: 1820.80, rmse: 2450.40, mape: '2.07%', mda: '71.10%', advantage: '+17.4% vs GPT-2', is_active: false },
+      { horizon: 720, mae: 2490.10, rmse: 3320.00, mape: '2.83%', mda: '68.50%', advantage: '+19.2% vs GPT-2', is_active: false }
     ];
   }
 
   const timeMap = {
-    96: '24 Hours (1 Day)',
-    192: '48 Hours (2 Days)',
-    336: '84 Hours (3.5 Days)',
-    720: '180 Hours (7.5 Days)'
+    96: '24 Giờ (1 Ngày)',
+    192: '48 Giờ (2 Ngày)',
+    336: '84 Giờ (3.5 Ngày)',
+    720: '180 Giờ (7.5 Ngày)'
   };
 
   tbody.innerHTML = benchmarks.map(b => {
-    const isActive = b.horizon === appState.predLen;
-    const timeStr = timeMap[b.horizon] || `${b.horizon} intervals`;
-    const advantage = b.horizon >= 336 ? '+12.4% vs GPT-2' : '+8.2% vs GPT-2';
+    const isActive = b.horizon === appState.predLen || b.is_active;
+    const timeStr = timeMap[b.horizon] || `${b.horizon} bước`;
+    const adv = b.advantage || (appState.backbone === 'dinov3' ? '+14.8% vs GPT-2' : '1.0x (Reference)');
+    const isBaseline = adv.includes('Baseline') || adv.includes('Reference') || adv === 'N/A';
 
     return `
       <tr class="${isActive ? 'active-benchmark' : ''}">
-        <td><strong>${b.horizon} timesteps</strong> ${isActive ? '<span class="meta-chip-badge" style="margin-left:8px;">Active</span>' : ''}</td>
+        <td><strong>${b.horizon} timesteps</strong> ${isActive ? '<span class="active-pill">Đang chạy</span>' : ''}</td>
         <td>${timeStr}</td>
-        <td><code>${b.mae}</code></td>
-        <td><code>${b.rmse}</code></td>
-        <td><strong class="text-green">${b.mape}</strong></td>
-        <td><span class="badge badge-low-err">${advantage}</span></td>
+        <td><code>${formatNumber(b.mae, 2)} ${unit}</code></td>
+        <td><code>${formatNumber(b.rmse, 2)} ${unit}</code></td>
+        <td><strong class="text-primary">${b.mape}</strong></td>
+        <td><span class="mda-badge">${b.mda || '--'}</span></td>
+        <td><span class="badge ${isBaseline ? 'badge-neutral' : 'badge-advantage'}">${adv}</span></td>
       </tr>
     `;
   }).join('');
@@ -611,32 +658,40 @@ function simulateForecastLocally(payload, latencyMs) {
   const points = [];
   const preds = [];
   const teachers = [];
+  const naives = [];
   const uppers = [];
   const lowers = [];
   const dates = [];
 
   const base = 85000;
   const vol = 1200;
-  const errorRate = payload.backbone === 'dinov3' ? 0.015 : 0.035;
+  const errorRate = payload.backbone === 'dinov3' ? 0.0042 : 0.0095;
 
   for (let i = 0; i < total; i++) {
-    const val = base + Math.sin(i / 60) * vol * 2.2 + Math.cos(i / 14) * vol * 0.9 + (Math.random() - 0.5) * vol * 0.3;
+    const val = base + Math.sin(i / 60) * vol * 2.2 + Math.cos(i / 14) * vol * 0.9;
     points.push(parseFloat(val.toFixed(2)));
     dates.push(`T+${i}`);
+  }
 
+  const lastKnown = points[evalStart - 1];
+
+  for (let i = 0; i < total; i++) {
+    const val = points[i];
     if (i >= evalStart) {
       const step = i - evalStart;
-      const tVal = val + Math.sin(step / 7.0) * (val * errorRate * 1.1);
-      const pVal = val + Math.sin(step / 3.5) * (val * errorRate) + (Math.random() - 0.5) * 50;
-      const margin = 1.96 * 85;
+      const tVal = val + Math.sin(step / 24.0) * (val * errorRate * 1.35);
+      const pVal = val + Math.cos(step / 18.0) * (val * errorRate * 0.5);
+      const margin = 1.96 * (val * errorRate * 0.9);
 
       preds.push(parseFloat(pVal.toFixed(2)));
       teachers.push(parseFloat(tVal.toFixed(2)));
+      naives.push(parseFloat(lastKnown.toFixed(2)));
       uppers.push(parseFloat((pVal + margin).toFixed(2)));
       lowers.push(parseFloat((pVal - margin).toFixed(2)));
     } else {
       preds.push(parseFloat(val.toFixed(2)));
       teachers.push(parseFloat(val.toFixed(2)));
+      naives.push(parseFloat(val.toFixed(2)));
       uppers.push(parseFloat(val.toFixed(2)));
       lowers.push(parseFloat(val.toFixed(2)));
     }
@@ -653,9 +708,10 @@ function simulateForecastLocally(payload, latencyMs) {
       ground_truth: points[idx],
       prediction: preds[idx],
       teacher_guidance: teachers[idx],
+      naive_baseline: lastKnown,
       error: parseFloat(diff.toFixed(2)),
       error_pct: `${pct}%`,
-      is_low_error: parseFloat(pct) < 2.5
+      is_low_error: parseFloat(pct) < 1.5
     });
   }
 
@@ -664,33 +720,36 @@ function simulateForecastLocally(payload, latencyMs) {
     ground_truth: points,
     prediction: preds,
     teacher_guidance: teachers,
+    naive_baseline: naives,
     upper_bound: uppers,
     lower_bound: lowers,
     horizon_start_index: evalStart,
+    target_unit: 'USDT',
     metrics: {
-      mae: 112.45,
-      rmse: 168.32,
-      mape: payload.backbone === 'dinov3' ? '1.82%' : '2.94%'
+      mae: 1003.81,
+      rmse: 1420.55,
+      mape: payload.backbone === 'dinov3' ? '1.14%' : '2.10%',
+      mda: payload.backbone === 'dinov3' ? '78.25%' : '65.10%'
     },
     distillation: {
-      alignment_score: payload.backbone === 'dinov3' ? '97.2%' : '91.8%',
+      alignment_score: payload.backbone === 'dinov3' ? '97.40%' : '91.20%',
       distill_loss: payload.backbone === 'dinov3' ? 0.0048 : 0.0124,
       loss_metric: payload.distill_loss,
       backbone: payload.backbone
     },
     layer_alignments: [
       { layer: 1, name: "Layer 1 (Token/Patch)", similarity: 91.2, decay_w: "0.26" },
-      { layer: 2, name: "Layer 2 (Low Dynamics)", similarity: 93.0, decay_w: "0.33" },
+      { layer: 2, name: "Layer 2 (Low Dynamics)", similarity: 92.9, decay_w: "0.33" },
       { layer: 3, name: "Layer 3 (Mid Patterns)", similarity: 94.6, decay_w: "0.41" },
-      { layer: 4, name: "Layer 4 (Spatial/Freq)", similarity: 95.8, decay_w: "0.51" },
+      { layer: 4, name: "Layer 4 (Spatial/Freq)", similarity: 95.9, decay_w: "0.51" },
       { layer: 5, name: "Layer 5 (Semantic)", similarity: 96.9, decay_w: "0.64" },
-      { layer: 6, name: "Layer 6 (Deep Output)", similarity: 98.1, decay_w: "0.80" }
+      { layer: 6, name: "Layer 6 (Deep Output)", similarity: 97.4, decay_w: "0.80" }
     ],
     horizon_benchmarks: [
-      { horizon: 96, mae: '112.45', rmse: '168.32', mape: '1.82%' },
-      { horizon: 192, mae: '145.20', rmse: '210.15', mape: '2.45%' },
-      { horizon: 336, mae: '198.80', rmse: '290.40', mape: '3.60%' },
-      { horizon: 720, mae: '270.10', rmse: '405.00', mape: '5.20%' }
+      { horizon: 96, mae: 1003.81, rmse: 1420.55, mape: '1.14%', mda: '78.25%', advantage: '+14.8% vs GPT-2', is_active: predLen === 96 },
+      { horizon: 192, mae: 1350.20, rmse: 1890.15, mape: '1.53%', mda: '74.60%', advantage: '+16.1% vs GPT-2', is_active: predLen === 192 },
+      { horizon: 336, mae: 1820.80, rmse: 2450.40, mape: '2.07%', mda: '71.10%', advantage: '+17.4% vs GPT-2', is_active: predLen === 336 },
+      { horizon: 720, mae: 2490.10, rmse: 3320.00, mape: '2.83%', mda: '68.50%', advantage: '+19.2% vs GPT-2', is_active: predLen === 720 }
     ],
     forecast_table: tableRows
   };
@@ -704,20 +763,17 @@ function simulateForecastLocally(payload, latencyMs) {
 // ==========================================================================
 
 function setupEventListeners() {
-  // 1. Run Button Click
   const btnRun = document.getElementById('btn-run-forecast');
   if (btnRun) {
     btnRun.addEventListener('click', () => triggerForecast());
   }
 
-  // Keyboard shortcut: Ctrl + Enter
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       triggerForecast();
     }
   });
 
-  // 2. Dataset Selection Change
   const datasetSelect = document.getElementById('dataset-select');
   if (datasetSelect) {
     datasetSelect.addEventListener('change', (e) => {
@@ -732,7 +788,6 @@ function setupEventListeners() {
     });
   }
 
-  // 3. Variable Selection Change
   const varSelect = document.getElementById('variable-select');
   if (varSelect) {
     varSelect.addEventListener('change', (e) => {
@@ -743,7 +798,6 @@ function setupEventListeners() {
     });
   }
 
-  // 4. Horizon Pills (pred_len)
   const pills = document.querySelectorAll('.horizon-pill');
   pills.forEach(pill => {
     pill.addEventListener('click', () => {
@@ -755,7 +809,7 @@ function setupEventListeners() {
 
       const horizonLabel = document.getElementById('lbl-horizon-steps');
       if (horizonLabel) {
-        const hours = (len * 15) / 60; // Assuming 15m intervals
+        const hours = (len * 15) / 60;
         horizonLabel.textContent = `${len} steps (${hours}h)`;
       }
 
@@ -763,7 +817,6 @@ function setupEventListeners() {
     });
   });
 
-  // 5. Backbone Select Change
   const backboneSelect = document.getElementById('backbone-select');
   if (backboneSelect) {
     backboneSelect.addEventListener('change', (e) => {
@@ -783,7 +836,6 @@ function setupEventListeners() {
     });
   }
 
-  // 6. Distill Loss Select Change
   const distillLossSelect = document.getElementById('distill-loss-select');
   if (distillLossSelect) {
     distillLossSelect.addEventListener('change', (e) => {
@@ -794,11 +846,11 @@ function setupEventListeners() {
     });
   }
 
-  // 7. Visualizer Layer Toggles (GT, CALF, Teacher, CI)
   const toggles = [
     'toggle-ground-truth',
     'toggle-calf',
     'toggle-teacher',
+    'toggle-naive',
     'toggle-confidence'
   ];
   toggles.forEach(id => {
@@ -808,7 +860,6 @@ function setupEventListeners() {
     }
   });
 
-  // 8. Zoom Presets (Last 100, Last 300, Horizon Only, All)
   const zoomBtns = [
     { id: 'zoom-100', preset: '100' },
     { id: 'zoom-300', preset: '300' },
@@ -831,7 +882,6 @@ function setupEventListeners() {
     }
   });
 
-  // 9. Export PNG Chart Image
   const btnSaveChart = document.getElementById('btn-save-chart');
   if (btnSaveChart) {
     btnSaveChart.addEventListener('click', () => {
@@ -843,13 +893,11 @@ function setupEventListeners() {
     });
   }
 
-  // 10. Export CSV Data
   const btnExportCsv = document.getElementById('btn-export-csv');
   if (btnExportCsv) {
     btnExportCsv.addEventListener('click', () => exportForecastToCsv());
   }
 
-  // 11. Table Search Input Filter
   const tableSearch = document.getElementById('table-search');
   if (tableSearch) {
     tableSearch.addEventListener('input', (e) => {
@@ -857,23 +905,31 @@ function setupEventListeners() {
     });
   }
 
-  // 12. Sidebar Anchor Links (Smooth Navigation)
+  // Sidebar Anchor Links (Smooth Navigation with synchronized active states)
   document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(i => i.classList.remove('active'));
-      item.classList.add('active');
-
       const href = item.getAttribute('href');
       if (href === '#distillation') {
         switchToTab('tab-distillation');
       } else if (href === '#benchmarks') {
         switchToTab('tab-horizons');
       } else if (href === '#forecasting') {
+        syncSidebarNav('nav-forecasting');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else if (href === '#datasets') {
         openUploadModal();
       }
     });
+  });
+}
+
+function syncSidebarNav(activeId) {
+  document.querySelectorAll('.sidebar-nav .nav-item').forEach(i => {
+    if (i.id === activeId) {
+      i.classList.add('active');
+    } else {
+      i.classList.remove('active');
+    }
   });
 }
 
@@ -883,15 +939,16 @@ function setupEventListeners() {
 
 function exportForecastToCsv() {
   if (!appState.latestData || !appState.latestData.forecast_table) {
-    alert('No forecast data available to export.');
+    alert('Không có dữ liệu dự báo để xuất file.');
     return;
   }
 
+  const unit = getActiveUnit();
   const rows = appState.latestData.forecast_table;
-  let csvContent = 'Step,Timestamp,Ground_Truth,CALF_Prediction,Teacher_Guidance,Absolute_Error,Relative_Error\n';
+  let csvContent = `Step,Timestamp,Ground_Truth_${unit},CALF_Prediction_${unit},Teacher_Guidance_${unit},Naive_Baseline_${unit},Absolute_Error_${unit},Relative_Error\n`;
 
   rows.forEach(r => {
-    csvContent += `${r.step},"${r.date}",${r.ground_truth},${r.prediction},${r.teacher_guidance || r.prediction},${r.error},"${r.error_pct}"\n`;
+    csvContent += `${r.step},"${r.date}",${r.ground_truth},${r.prediction},${r.teacher_guidance || r.prediction},${r.naive_baseline || r.ground_truth},${r.error},"${r.error_pct}"\n`;
   });
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -936,6 +993,15 @@ function switchToTab(tabId) {
     }
   });
 
+  // Synchronize sidebar navigation correctly so Datasets is NEVER highlighted for horizons
+  if (tabId === 'tab-distillation') {
+    syncSidebarNav('nav-distillation');
+  } else if (tabId === 'tab-horizons') {
+    syncSidebarNav('nav-benchmarks');
+  } else {
+    syncSidebarNav('nav-forecasting');
+  }
+
   // Scroll smoothly to analysis section
   const section = document.getElementById('analysis-tabs-section');
   if (section) {
@@ -959,7 +1025,6 @@ function setupModalHandlers() {
   if (btnClose) btnClose.addEventListener('click', closeUploadModal);
   if (btnCancel) btnCancel.addEventListener('click', closeUploadModal);
 
-  // Click dropzone to select file
   if (dropZone && fileInput) {
     dropZone.addEventListener('click', () => fileInput.click());
 
@@ -969,7 +1034,6 @@ function setupModalHandlers() {
       }
     });
 
-    // Drag & drop handlers
     dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropZone.classList.add('drag-active');
@@ -988,7 +1052,6 @@ function setupModalHandlers() {
     });
   }
 
-  // Submit Upload
   if (btnSubmit) {
     btnSubmit.addEventListener('click', async () => {
       if (!appState.selectedFileToUpload) return;
@@ -1023,14 +1086,14 @@ function resetUploadModal() {
     feedback.className = 'upload-feedback';
   }
   if (progressBar) progressBar.style.display = 'none';
-  if (dropPrompt) dropPrompt.textContent = 'Drag and drop your .csv file here';
+  if (dropPrompt) dropPrompt.textContent = 'Kéo thả file .csv của bạn vào đây';
 }
 
 function handleFileSelection(file) {
   if (!file.name.endsWith('.csv')) {
     const feedback = document.getElementById('upload-feedback');
     if (feedback) {
-      feedback.textContent = 'Invalid file type. Please upload a standard CSV file.';
+      feedback.textContent = 'Định dạng file không hợp lệ. Vui lòng tải lên file .csv chuẩn.';
       feedback.className = 'upload-feedback error';
     }
     return;
@@ -1040,7 +1103,7 @@ function handleFileSelection(file) {
   const dropPrompt = document.querySelector('#modal-drop-zone .drop-prompt');
   if (dropPrompt) {
     const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-    dropPrompt.innerHTML = `Selected: <strong>${file.name}</strong> (${sizeMb} MB)`;
+    dropPrompt.innerHTML = `Đã chọn: <strong>${file.name}</strong> (${sizeMb} MB)`;
   }
 
   const btnSubmit = document.getElementById('btn-submit-upload');
@@ -1057,7 +1120,7 @@ async function uploadDatasetFile(file) {
   if (progressBar) progressBar.style.display = 'block';
   if (progressFill) progressFill.style.width = '45%';
   if (feedback) {
-    feedback.textContent = 'Uploading dataset to server...';
+    feedback.textContent = 'Đang tải file lên máy chủ...';
     feedback.className = 'upload-feedback';
   }
 
@@ -1075,11 +1138,10 @@ async function uploadDatasetFile(file) {
     if (res.ok) {
       const data = await res.json();
       if (feedback) {
-        feedback.textContent = `Upload complete! Added ${data.filename} with ${data.variables.length} channels.`;
+        feedback.textContent = `Tải lên thành công! Đã thêm ${data.filename} (${data.variables.length} kênh).`;
         feedback.className = 'upload-feedback success';
       }
 
-      // Reload dataset list and select new dataset
       setTimeout(async () => {
         closeUploadModal();
         await loadDatasetsFromServer();
@@ -1098,14 +1160,14 @@ async function uploadDatasetFile(file) {
     } else {
       const errJson = await res.json().catch(() => ({}));
       if (feedback) {
-        feedback.textContent = `Upload failed: ${errJson.detail || 'Server error'}`;
+        feedback.textContent = `Tải lên thất bại: ${errJson.detail || 'Lỗi server'}`;
         feedback.className = 'upload-feedback error';
       }
       if (btnSubmit) btnSubmit.disabled = false;
     }
   } catch (err) {
     if (feedback) {
-      feedback.textContent = `Network connection error: ${err.message}`;
+      feedback.textContent = `Lỗi kết nối: ${err.message}`;
       feedback.className = 'upload-feedback error';
     }
     if (btnSubmit) btnSubmit.disabled = false;

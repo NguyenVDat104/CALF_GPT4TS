@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2.2.0">
+  <link rel="stylesheet" href="style.css?v=2.3.0">
   <!-- Chart.js for high performance time series rendering -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -202,78 +202,108 @@
         </div>
       </section>
 
-      <!-- DUAL METRICS RIBBON -->
-      <section class="metrics-ribbon" id="metrics-ribbon">
-        <!-- MAE -->
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-title">MAE (Mean Absolute)</span>
-            <span class="metric-tag tag-blue">Task L1</span>
+      <!-- DUAL METRICS SECTIONS: TASK PERFORMANCE & DISTILLATION RESEARCH -->
+      <section class="metrics-super-container" id="metrics-ribbon">
+        <!-- GROUP A: TASK PERFORMANCE (DỰ BÁO CHUỖI THỜI GIAN) -->
+        <div class="metrics-cluster cluster-task">
+          <div class="cluster-header">
+            <span class="cluster-title">🎯 Hiệu năng Dự báo (Task Metrics)</span>
+            <span class="cluster-caption">Đo lường trên khoảng dự báo Out-of-Sample</span>
           </div>
-          <div class="metric-value-row">
-            <span class="metric-val" id="val-mae">--</span>
+          <div class="metrics-grid-task">
+            <!-- MAE -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">MAE (Sai số tuyệt đối)</span>
+                <span class="metric-tag">L1 Error</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-mae">--</span>
+              </div>
+              <div class="metric-footer">Độ lệch tuyệt đối trung bình so với thực tế</div>
+            </div>
+
+            <!-- RMSE -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">RMSE (Sai số toàn phương)</span>
+                <span class="metric-tag">L2 Penalty</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-rmse">--</span>
+              </div>
+              <div class="metric-footer">Mức độ phạt các điểm sai số đột biến</div>
+            </div>
+
+            <!-- MAPE (PRIMARY HIGHLIGHT) -->
+            <div class="metric-card highlight">
+              <div class="metric-header">
+                <span class="metric-title">MAPE (Sai số phần trăm)</span>
+                <span class="metric-tag tag-primary">Chỉ số chính</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val text-primary" id="val-mape">--</span>
+              </div>
+              <div class="metric-footer">Độ chính xác tương đối của mô hình</div>
+            </div>
+
+            <!-- MDA (DIRECTIONAL ACCURACY) -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">MDA (Độ chuẩn xu hướng)</span>
+                <span class="metric-tag">Direction</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val text-primary" id="val-mda">--</span>
+              </div>
+              <div class="metric-footer">Tỷ lệ dự báo đúng chiều tăng/giảm &Delta;t</div>
+            </div>
           </div>
-          <div class="metric-footer">Target scale absolute deviation</div>
         </div>
 
-        <!-- RMSE -->
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-title">RMSE (Root Mean Sq)</span>
-            <span class="metric-tag tag-purple">Penalty</span>
+        <!-- GROUP B: DISTILLATION RESEARCH (CHƯNG CẤT ĐA PHƯƠNG THỨC) -->
+        <div class="metrics-cluster cluster-research">
+          <div class="cluster-header">
+            <span class="cluster-title">🔬 Chưng cất Đa phương thức (Research & Distillation)</span>
+            <span class="cluster-caption">Căn chỉnh biểu diễn ẩn giữa Foundation Model & Time Series</span>
           </div>
-          <div class="metric-value-row">
-            <span class="metric-val" id="val-rmse">--</span>
-          </div>
-          <div class="metric-footer">Standard quadratic variance</div>
-        </div>
+          <div class="metrics-grid-distill">
+            <!-- CROSS-MODAL ALIGNMENT -->
+            <div class="metric-card accent">
+              <div class="metric-header">
+                <span class="metric-title">Cross-Modal Alignment</span>
+                <span class="metric-tag">ViT Latent</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val text-accent" id="val-alignment">--</span>
+              </div>
+              <div class="metric-footer" id="val-alignment-desc">Độ tương đồng cosine không gian ẩn ViT</div>
+            </div>
 
-        <!-- MAPE -->
-        <div class="metric-card highlight">
-          <div class="metric-header">
-            <span class="metric-title">MAPE (Relative Err)</span>
-            <span class="metric-tag tag-green">Precision</span>
-          </div>
-          <div class="metric-value-row">
-            <span class="metric-val text-green" id="val-mape">--</span>
-          </div>
-          <div class="metric-footer">Forecast accuracy percentage</div>
-        </div>
+            <!-- FEATURE DISTILL LOSS -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Distill Loss (&Lscr;<sub>feat</sub>)</span>
+                <span class="metric-tag" id="tag-distill-loss">COSINE</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-distill-loss">--</span>
+              </div>
+              <div class="metric-footer">Sai số căn chỉnh 6 tầng Transformer</div>
+            </div>
 
-        <!-- CROSS-MODAL ALIGNMENT SCORE -->
-        <div class="metric-card accent">
-          <div class="metric-header">
-            <span class="metric-title">Cross-Modal Alignment</span>
-            <span class="metric-tag tag-cyan">Distillation</span>
+            <!-- INFERENCE LATENCY -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Độ trễ Suy luận</span>
+                <span class="metric-tag">Latency</span>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-val" id="val-latency">--</span>
+              </div>
+              <div class="metric-footer" id="val-latency-desc">Tốc độ suy luận RevIN + Neural Projection</div>
+            </div>
           </div>
-          <div class="metric-value-row">
-            <span class="metric-val text-cyan" id="val-alignment">--</span>
-          </div>
-          <div class="metric-footer" id="val-alignment-desc">ViT Latent Space Convergence</div>
-        </div>
-
-        <!-- FEATURE DISTILL LOSS -->
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-title">Distill Loss (L_feat)</span>
-            <span class="metric-tag tag-amber" id="tag-distill-loss">Cosine</span>
-          </div>
-          <div class="metric-value-row">
-            <span class="metric-val" id="val-distill-loss">--</span>
-          </div>
-          <div class="metric-footer">Intermediate representations error</div>
-        </div>
-
-        <!-- INFERENCE LATENCY -->
-        <div class="metric-card">
-          <div class="metric-header">
-            <span class="metric-title">Latency</span>
-            <span class="metric-tag tag-gray">Speed</span>
-          </div>
-          <div class="metric-value-row">
-            <span class="metric-val" id="val-latency">--</span>
-          </div>
-          <div class="metric-footer" id="val-latency-desc">RevIN + Neural Projection</div>
         </div>
       </section>
 
@@ -284,22 +314,27 @@
           <div class="toolbar-left">
             <h3 class="chart-heading">Forecast Horizon & Model Alignment</h3>
             <div class="layer-toggles">
-              <label class="layer-toggle-label">
+              <label class="layer-toggle-label" title="Dữ liệu thực tế quan sát được">
                 <input type="checkbox" id="toggle-ground-truth" checked>
                 <span class="layer-toggle-dot dot-orange"></span>
                 <span>Ground Truth (Thực tế)</span>
               </label>
-              <label class="layer-toggle-label">
+              <label class="layer-toggle-label" title="Dự báo từ mô hình học sinh CALF sau khi chưng cất">
                 <input type="checkbox" id="toggle-calf" checked>
                 <span class="layer-toggle-dot dot-blue"></span>
                 <span>CALF Student Forecast</span>
               </label>
-              <label class="layer-toggle-label">
+              <label class="layer-toggle-label" title="Định hướng vĩ mô từ giáo viên DINO-V3/GPT-2">
                 <input type="checkbox" id="toggle-teacher" checked>
                 <span class="layer-toggle-dot dot-purple"></span>
                 <span>Teacher Guidance (ViT/LLM)</span>
               </label>
-              <label class="layer-toggle-label">
+              <label class="layer-toggle-label" title="Mô hình cơ sở lặp lại giá trị cuối của lookback">
+                <input type="checkbox" id="toggle-naive">
+                <span class="layer-toggle-dot dot-naive"></span>
+                <span>Naive Baseline (Persistence)</span>
+              </label>
+              <label class="layer-toggle-label" title="Khoảng tin cậy xác suất 95%">
                 <input type="checkbox" id="toggle-confidence" checked>
                 <span class="layer-toggle-dot dot-gray"></span>
                 <span>95% Confidence Band</span>
@@ -325,6 +360,14 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               <span>CSV</span>
             </button>
+          </div>
+        </div>
+
+        <!-- BACKTEST & RESIDUAL EXPLANATION BANNER -->
+        <div class="backtest-disclaimer">
+          <div class="disclaimer-badge">Chế độ Thẩm định</div>
+          <div class="disclaimer-text">
+            <strong>Out-of-Sample Backtest:</strong> Biểu đồ chạy đối soát trên chuỗi dữ liệu thực tế đã biết (Ground Truth cam) để kiểm chứng sai số trước khi dự báo tương lai. Dải tin cậy 95% được tính theo phân phối sai số residual thực nghiệm: <code>&ycirc; &plusmn; 1.96 &bull; &sigma;<sub>res</sub></code>.
           </div>
         </div>
 
@@ -428,6 +471,7 @@
                     <th>Ground Truth</th>
                     <th>CALF Prediction</th>
                     <th>Teacher Guidance</th>
+                    <th>Naive Baseline</th>
                     <th>Delta Error</th>
                     <th>Relative Error (%)</th>
                     <th>Status</th>
@@ -451,6 +495,7 @@
                     <th>MAE</th>
                     <th>RMSE</th>
                     <th>MAPE</th>
+                    <th>MDA (Directional)</th>
                     <th>Relative Advantage (vs GPT-2)</th>
                   </tr>
                 </thead>
@@ -500,6 +545,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=2.2.0"></script>
+  <script src="app.js?v=2.3.0"></script>
 </body>
 </html>
