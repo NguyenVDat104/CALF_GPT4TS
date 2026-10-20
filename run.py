@@ -87,9 +87,9 @@ if __name__ == '__main__':
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
-    parser.add_argument('--task_loss', type=str, default='l1', help='task loss function')
-    parser.add_argument('--distill_loss', type=str, default='l1', help='distillation loss function')
-    parser.add_argument('--logits_loss', type=str, default='l1', help='logits loss function')
+    parser.add_argument('--task_loss', type=str, default='l1', choices=['l1', 'mse', 'smooth_l1', 'huber', 'smape', 'mape', 'mase'], help='task supervised loss function')
+    parser.add_argument('--distill_loss', type=str, default='l1', choices=['l1', 'mse', 'smooth_l1', 'huber', 'cosine', 'contrastive', 'kl_div'], help='intermediate representation distillation loss function (e.g. cosine for DINO-V3)')
+    parser.add_argument('--logits_loss', type=str, default='l1', choices=['l1', 'mse', 'smooth_l1', 'huber', 'cosine', 'kl_div'], help='output logits distillation loss function')
 
     # GPU
     parser.add_argument('--use_gpu', type=bool, default=True, help='use gpu')

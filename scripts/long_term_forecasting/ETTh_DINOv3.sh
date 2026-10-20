@@ -37,6 +37,8 @@ python run.py \
     --encoder pca \
     --dinov3_layers 6 \
     --dinov3_pretrained 1 \
+    --distill_loss cosine \
+    --task_loss l1 \
     --bootstrap_eval $bootstrap_eval \
     --itr $itt \
     --gpu $gpt_loc \
@@ -114,6 +116,8 @@ python run.py \
     --encoder dinov3 \
     --dinov3_layers 6 \
     --dinov3_pretrained 1 \
+    --distill_loss cosine \
+    --task_loss l1 \
     --bootstrap_eval $bootstrap_eval \
     --itr $itt \
     --gpu $gpt_loc \
