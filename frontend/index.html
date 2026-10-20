@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CALF Forecasting - Cross-modal LLM Fine-Tuning</title>
+  <title>CALF Forecasting - Cross-modal Vision & LLM Fine-Tuning</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <!-- Chart.js for high performance time series rendering -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -23,31 +23,27 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1 class="brand-title">CALF Forecasting</h1>
-          <span class="brand-subtitle">Cross-modal LLM Fine-Tuning</span>
+          <h1 class="brand-title">CALF Studio</h1>
+          <span class="brand-subtitle">Cross-modal ViT & LLM</span>
         </div>
       </div>
 
       <nav class="sidebar-nav">
-        <a href="#home" class="nav-item" id="nav-home">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span>Home</span>
-        </a>
         <a href="#forecasting" class="nav-item active" id="nav-forecasting">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
           <span>Forecasting</span>
         </a>
+        <a href="#distillation" class="nav-item" id="nav-distillation">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+          <span>Distillation Analysis</span>
+        </a>
+        <a href="#benchmarks" class="nav-item" id="nav-benchmarks">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="8" height="8" rx="2"></rect><rect x="2" y="14" width="8" height="8" rx="2"></rect><rect x="8" y="2" width="8" height="8" rx="2"></rect><path d="M6 14V8h12v6"></path><path d="M12 2v6"></path></svg>
+          <span>Multi-Horizons</span>
+        </a>
         <a href="#datasets" class="nav-item" id="nav-datasets">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
           <span>Datasets</span>
-        </a>
-        <a href="#models" class="nav-item" id="nav-models">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="8" height="8" rx="2"></rect><rect x="2" y="14" width="8" height="8" rx="2"></rect><rect x="8" y="2" width="8" height="8" rx="2"></rect><path d="M6 14V8h12v6"></path><path d="M12 2v6"></path></svg>
-          <span>Model Details</span>
-        </a>
-        <a href="#settings" class="nav-item" id="nav-settings">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-          <span>Settings</span>
         </a>
       </nav>
 
@@ -57,380 +53,411 @@
           <div class="promo-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
           </div>
-          <span class="promo-title">CALF + DINO-V3</span>
+          <span class="promo-title">DINO-V3 + CALF</span>
         </div>
-        <p class="promo-desc">Aligning time series and text representations via cross-modal fine-tuning for better forecasting performance.</p>
-        <a href="#learn-more" class="promo-link" id="btn-learn-more">
-          <span>Learn more</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-        </a>
+        <p class="promo-desc">Bi-directional ViT representation distillation for robust long-term forecasting.</p>
+        <div class="promo-links">
+          <a href="https://github.com/NguyenVDat104/CALF_GPT4TS" target="_blank" class="promo-link">
+            <span>GitHub Repo</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17l9.2-9.2M17 17V8H8"/></svg>
+          </a>
+        </div>
       </div>
     </aside>
 
     <!-- MAIN VIEW -->
     <main class="main-content">
-      <!-- TOP HEADER BAR -->
+      <!-- TOPBAR -->
       <header class="topbar">
         <div class="topbar-welcome">
-          <h2 class="page-title">Time Series Forecasting with CALF</h2>
-          <p class="page-subtitle">Upload your dataset, configure the parameters and run prediction.</p>
+          <div class="title-with-pill">
+            <h2 class="page-title">Time Series Forecasting with CALF</h2>
+            <span class="status-pill success" id="cloud-status-pill">
+              <span class="pulse-dot"></span> Cloud 24/7 Active
+            </span>
+            <span class="model-badge-header" id="header-model-badge">DINO-V3 Bi-directional ViT</span>
+          </div>
+          <p class="page-subtitle">Cross-modal alignment & multi-layer knowledge distillation between Foundation Models and Time Series.</p>
         </div>
 
         <div class="topbar-actions">
+          <button class="action-btn-outline" id="btn-open-upload" title="Upload new CSV dataset">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Upload CSV</span>
+          </button>
+
           <button class="icon-button" id="theme-toggle" title="Toggle Light / Dark mode" aria-label="Toggle Theme">
             <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
             <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
           </button>
           
           <div class="user-profile" id="user-profile">
-            <div class="avatar-badge">T</div>
-            <span class="user-name">Teacher</span>
+            <div class="avatar-badge">Đ</div>
+            <span class="user-name">Đạt Nguyễn</span>
           </div>
         </div>
       </header>
 
-      <!-- CONFIGURATION SECTION (3 CARDS) -->
-      <section class="config-grid">
-        <!-- CARD 1: DATASET -->
-        <div class="config-card" id="card-dataset">
-          <div class="card-header">
-            <span class="step-badge">1</span>
-            <h3 class="card-title">1. Dataset</h3>
+      <!-- STREAMLINED CONFIGURATION PANEL (HORIZONTAL GRID) -->
+      <section class="control-panel-grid">
+        <!-- BLOCK 1: DATASET -->
+        <div class="panel-block" id="block-dataset">
+          <div class="block-header">
+            <span class="block-num">1</span>
+            <span class="block-title">Dataset & Target</span>
           </div>
-          
-          <div class="dataset-info-box">
-            <div class="dataset-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          <div class="block-inputs-row">
+            <div class="form-group flex-2">
+              <label class="form-label" for="dataset-select">Dataset File</label>
+              <select class="form-control" id="dataset-select">
+                <option value="BTCUSDT_15m_calf.csv" selected>BTCUSDT_15m_calf.csv (Bitcoin 15m)</option>
+                <option value="electricity.csv">electricity.csv (Benchmark)</option>
+              </select>
             </div>
-            <div class="dataset-details">
-              <div class="dataset-name-row">
-                <span class="dataset-filename" id="current-dataset-name">BTCUSDT_15m_calf.csv</span>
-                <span class="dataset-filesize" id="current-dataset-size">(6.27 MB)</span>
-                <span class="status-pill success" id="dataset-status">
-                  <span class="pulse-dot"></span> Loaded
-                </span>
-              </div>
-              <div class="dataset-meta-row">
-                <span id="current-dataset-shape">Shape: (70177, 7)</span>
-                <span class="meta-dot">•</span>
-                <span id="current-dataset-vars">Variables (C): 7</span>
-              </div>
-            </div>
-          </div>
-
-          <button class="secondary-button" id="btn-change-dataset">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <span>Change dataset</span>
-          </button>
-        </div>
-
-        <!-- CARD 2: FORECASTING SETTINGS -->
-        <div class="config-card" id="card-forecast-settings">
-          <div class="card-header">
-            <span class="step-badge">2</span>
-            <h3 class="card-title">2. Forecasting Settings</h3>
-          </div>
-
-          <div class="form-row three-cols">
-            <div class="form-group">
-              <label for="select-seq-len">Input length (T)</label>
-              <div class="select-wrapper">
-                <select id="select-seq-len">
-                  <option value="48">48</option>
-                  <option value="96" selected>96</option>
-                  <option value="192">192</option>
-                  <option value="336">336</option>
-                  <option value="720">720</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="select-pred-len">Horizon (H)</label>
-              <div class="select-wrapper">
-                <select id="select-pred-len">
-                  <option value="24">24</option>
-                  <option value="48">48</option>
-                  <option value="96" selected>96</option>
-                  <option value="192">192</option>
-                  <option value="336">336</option>
-                  <option value="720">720</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="select-stride">Stride</label>
-              <div class="select-wrapper">
-                <select id="select-stride">
-                  <option value="1" selected>1</option>
-                  <option value="2">2</option>
-                  <option value="4">4</option>
-                  <option value="8">8</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <button class="primary-button cta-run" id="btn-run-forecasting">
-            <svg class="run-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span class="btn-text">Run Forecasting</span>
-            <div class="spinner" id="run-spinner" style="display:none;"></div>
-          </button>
-        </div>
-
-        <!-- CARD 3: MODEL CONFIG -->
-        <div class="config-card" id="card-model-config">
-          <div class="card-header">
-            <span class="step-badge">3</span>
-            <h3 class="card-title">3. Model Config</h3>
-          </div>
-
-          <div class="model-form-stack">
-            <div class="model-row">
-              <div class="model-label">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                <span>Backbone</span>
-              </div>
-              <div class="select-wrapper compact">
-                <select id="select-backbone">
-                  <option value="dinov3" selected>DINO-V3 (6 layers) 🌟</option>
-                  <option value="gpt2">GPT-2 (6 layers)</option>
-                  <option value="dinov3_full">DINO-V3 ViT-Base (12 layers)</option>
-                  <option value="none">Standard Attention (No LLM)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="model-row">
-              <div class="model-label">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m4.93 4.93 4.24 4.24"></path><path d="m14.83 9.17 4.24-4.24"></path><path d="m14.83 14.83 4.24 4.24"></path><path d="m9.17 14.83-4.24 4.24"></path></svg>
-                <span>Cross-modal</span>
-              </div>
-              <div class="select-wrapper compact">
-                <select id="select-crossmodal">
-                  <option value="enabled_pca" selected>Enabled (PCA Word Token)</option>
-                  <option value="enabled_dino">Enabled (DINO-V3 Patch)</option>
-                  <option value="disabled">Disabled</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="model-row">
-              <div class="model-label">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path><path d="M6 6h10"></path><path d="M6 10h10"></path></svg>
-                <span>Loss Function</span>
-              </div>
-              <div class="select-wrapper compact">
-                <select id="select-loss">
-                  <option value="mse_mae">MSE + MAE</option>
-                  <option value="distill" selected>Distill (Task + Logits + Feat)</option>
-                  <option value="l1">L1 Loss (MAE)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RESULTS ROW 1: TIME SERIES CHART + METRICS TABLE -->
-      <section class="results-grid">
-        <!-- MAIN CHART CARD -->
-        <div class="panel-card chart-panel" id="panel-chart">
-          <div class="panel-header">
-            <div class="panel-title-area">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              <h3 class="panel-title">Forecasting Results</h3>
-            </div>
-
-            <div class="panel-controls">
-              <div class="tab-pill-group">
-                <button class="tab-pill active" id="tab-time-series">Time Series View</button>
-                <button class="tab-pill" id="tab-per-variable">Per Variable View</button>
-              </div>
-
-              <div class="var-select-box">
-                <label for="select-chart-variable">Variable</label>
-                <select id="select-chart-variable">
-                  <option value="close" selected>close</option>
-                  <option value="open">open</option>
-                  <option value="high">high</option>
-                  <option value="low">low</option>
-                  <option value="volume">volume</option>
-                  <option value="quote_volume">quote_volume</option>
-                  <option value="number_of_trades">number_of_trades</option>
-                </select>
-              </div>
-
-              <button class="icon-button small" id="btn-download-chart" title="Export Chart Image">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- CHART LEGEND -->
-          <div class="chart-legend-row">
-            <div class="legend-item">
-              <span class="legend-line ground-truth"></span>
-              <span>Ground Truth</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-line prediction"></span>
-              <span>Prediction</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-box forecast-horizon"></span>
-              <span>Forecast Horizon</span>
-            </div>
-          </div>
-
-          <!-- CANVAS CONTAINER -->
-          <div class="chart-container" id="chart-wrapper">
-            <canvas id="forecastCanvas"></canvas>
-          </div>
-          <div class="chart-xaxis-label">Time steps</div>
-        </div>
-
-        <!-- METRICS TABLE CARD -->
-        <div class="panel-card metrics-panel" id="panel-metrics">
-          <div class="panel-header">
-            <div class="panel-title-area">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
-              <h3 class="panel-title">Prediction vs Ground Truth</h3>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="metrics-table">
-              <thead>
-                <tr>
-                  <th>Horizon</th>
-                  <th>MAE &darr;</th>
-                  <th>RMSE &darr;</th>
-                  <th>MAPE &darr;</th>
-                </tr>
-              </thead>
-              <tbody id="metrics-tbody">
-                <tr class="active-horizon">
-                  <td><strong>96</strong></td>
-                  <td>0.124</td>
-                  <td>0.187</td>
-                  <td>3.21%</td>
-                </tr>
-                <tr>
-                  <td>192</td>
-                  <td>0.162</td>
-                  <td>0.241</td>
-                  <td>4.37%</td>
-                </tr>
-                <tr>
-                  <td>336</td>
-                  <td>0.218</td>
-                  <td>0.318</td>
-                  <td>5.96%</td>
-                </tr>
-                <tr>
-                  <td>720</td>
-                  <td>0.301</td>
-                  <td>0.452</td>
-                  <td>8.74%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="info-callout">
-            <svg class="info-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <p>Các chỉ số được tính trên tập kiểm thử.<br><strong>MAE, RMSE, MAPE</strong> càng thấp càng tốt.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- RESULTS ROW 2: STEP VALUES TABLE + MODEL INFORMATION -->
-      <section class="details-grid">
-        <!-- STEP BY STEP FORECASTED VALUES TABLE -->
-        <div class="panel-card table-panel" id="panel-forecasted-table">
-          <div class="panel-header">
-            <div class="panel-title-area">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              <h3 class="panel-title" id="table-horizon-title">Forecasted Values (Last 96 Steps)</h3>
-            </div>
-
-            <div class="var-select-box">
-              <label for="select-table-variable">Variable</label>
-              <select id="select-table-variable">
+            <div class="form-group flex-1">
+              <label class="form-label" for="variable-select">Target Var</label>
+              <select class="form-control" id="variable-select">
                 <option value="close" selected>close</option>
                 <option value="open">open</option>
                 <option value="high">high</option>
                 <option value="low">low</option>
                 <option value="volume">volume</option>
-                <option value="quote_volume">quote_volume</option>
-                <option value="number_of_trades">number_of_trades</option>
               </select>
             </div>
           </div>
-
-          <div class="table-scroll-container">
-            <table class="values-table">
-              <thead>
-                <tr>
-                  <th>Time step</th>
-                  <th>Ground Truth</th>
-                  <th>Prediction</th>
-                  <th>Error</th>
-                </tr>
-              </thead>
-              <tbody id="values-tbody">
-                <!-- Dynamically populated rows -->
-              </tbody>
-            </table>
+          <div class="block-meta-chips">
+            <span class="meta-chip" id="meta-shape">70,177 rows • 7 channels</span>
+            <span class="meta-chip-badge" id="meta-status">Ready</span>
           </div>
         </div>
 
-        <!-- MODEL INFORMATION & SUCCESS STATUS -->
-        <div class="panel-card info-panel" id="panel-model-info">
-          <div class="panel-header">
-            <div class="panel-title-area">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-              <h3 class="panel-title">Model Information</h3>
+        <!-- BLOCK 2: WINDOWS & HORIZONS -->
+        <div class="panel-block" id="block-windows">
+          <div class="block-header">
+            <span class="block-num">2</span>
+            <span class="block-title">Temporal Horizon</span>
+          </div>
+          <div class="block-inputs-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="seq-len-input">Lookback (seq)</label>
+              <input type="number" class="form-control" id="seq-len-input" value="96" min="24" max="720" step="24">
+            </div>
+            <div class="form-group flex-2">
+              <label class="form-label">Forecast Horizon (pred_len)</label>
+              <div class="horizon-pills" id="horizon-pills">
+                <button type="button" class="horizon-pill active" data-len="96">96</button>
+                <button type="button" class="horizon-pill" data-len="192">192</button>
+                <button type="button" class="horizon-pill" data-len="336">336</button>
+                <button type="button" class="horizon-pill" data-len="720">720</button>
+              </div>
+            </div>
+          </div>
+          <div class="block-meta-chips">
+            <span class="meta-chip">Horizon: <strong id="lbl-horizon-steps">96 steps (24h)</strong></span>
+            <span class="meta-chip">Stride: <strong>1</strong></span>
+          </div>
+        </div>
+
+        <!-- BLOCK 3: CROSS-MODAL DISTILLATION -->
+        <div class="panel-block" id="block-architecture">
+          <div class="block-header">
+            <span class="block-num">3</span>
+            <span class="block-title">CALF Distillation Engine</span>
+          </div>
+          <div class="block-inputs-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="backbone-select">Teacher Backbone</label>
+              <select class="form-control" id="backbone-select">
+                <option value="dinov3" selected>DINO-V3 ViT (Bi-directional) 🌟</option>
+                <option value="gpt2">GPT-2 LLM (Causal Mask)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label class="form-label" for="distill-loss-select">Distill Metric (L_feat)</label>
+              <select class="form-control" id="distill-loss-select">
+                <option value="cosine" selected>Cosine Similarity (Optimal)</option>
+                <option value="contrastive">Contrastive InfoNCE</option>
+                <option value="smooth_l1">Smooth L1 / Huber</option>
+                <option value="l1">L1 Absolute</option>
+                <option value="mse">MSE Euclidean</option>
+              </select>
+            </div>
+          </div>
+          <div class="block-meta-chips">
+            <span class="meta-chip">Encoder: <strong id="lbl-encoder">PCA Word Alignment</strong></span>
+            <span class="meta-chip">Feature W: <strong>0.01 (γ=0.8)</strong></span>
+          </div>
+        </div>
+
+        <!-- BLOCK 4: RUN BUTTON -->
+        <div class="panel-block run-block" id="block-run">
+          <button class="run-button" id="btn-run-forecast">
+            <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
+            <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <span class="btn-text" id="btn-text">Run Forecast</span>
+          </button>
+          <div class="run-caption">
+            <span>Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- DUAL METRICS RIBBON -->
+      <section class="metrics-ribbon" id="metrics-ribbon">
+        <!-- MAE -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">MAE (Mean Absolute)</span>
+            <span class="metric-tag tag-blue">Task L1</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="val-mae">--</span>
+          </div>
+          <div class="metric-footer">Target scale absolute deviation</div>
+        </div>
+
+        <!-- RMSE -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">RMSE (Root Mean Sq)</span>
+            <span class="metric-tag tag-purple">Penalty</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="val-rmse">--</span>
+          </div>
+          <div class="metric-footer">Standard quadratic variance</div>
+        </div>
+
+        <!-- MAPE -->
+        <div class="metric-card highlight">
+          <div class="metric-header">
+            <span class="metric-title">MAPE (Relative Err)</span>
+            <span class="metric-tag tag-green">Precision</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val text-green" id="val-mape">--</span>
+          </div>
+          <div class="metric-footer">Forecast accuracy percentage</div>
+        </div>
+
+        <!-- CROSS-MODAL ALIGNMENT SCORE -->
+        <div class="metric-card accent">
+          <div class="metric-header">
+            <span class="metric-title">Cross-Modal Alignment</span>
+            <span class="metric-tag tag-cyan">Distillation</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val text-cyan" id="val-alignment">--</span>
+          </div>
+          <div class="metric-footer" id="val-alignment-desc">ViT Latent Space Convergence</div>
+        </div>
+
+        <!-- FEATURE DISTILL LOSS -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Distill Loss (L_feat)</span>
+            <span class="metric-tag tag-amber" id="tag-distill-loss">Cosine</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="val-distill-loss">--</span>
+          </div>
+          <div class="metric-footer">Intermediate representations error</div>
+        </div>
+
+        <!-- INFERENCE LATENCY -->
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-title">Latency</span>
+            <span class="metric-tag tag-gray">Speed</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-val" id="val-latency">--</span>
+          </div>
+          <div class="metric-footer" id="val-latency-desc">RevIN + Neural Projection</div>
+        </div>
+      </section>
+
+      <!-- MAIN VISUALIZER & CHART SECTION -->
+      <section class="visualizer-card" id="visualizer-section">
+        <!-- Visualizer Top Bar with Multi-Modal Toggles & Zoom -->
+        <div class="visualizer-toolbar">
+          <div class="toolbar-left">
+            <h3 class="chart-heading">Forecast Horizon & Model Alignment</h3>
+            <div class="layer-toggles">
+              <label class="layer-toggle-label">
+                <input type="checkbox" id="toggle-ground-truth" checked>
+                <span class="layer-toggle-dot dot-orange"></span>
+                <span>Ground Truth (Thực tế)</span>
+              </label>
+              <label class="layer-toggle-label">
+                <input type="checkbox" id="toggle-calf" checked>
+                <span class="layer-toggle-dot dot-blue"></span>
+                <span>CALF Student Forecast</span>
+              </label>
+              <label class="layer-toggle-label">
+                <input type="checkbox" id="toggle-teacher" checked>
+                <span class="layer-toggle-dot dot-purple"></span>
+                <span>Teacher Guidance (ViT/LLM)</span>
+              </label>
+              <label class="layer-toggle-label">
+                <input type="checkbox" id="toggle-confidence" checked>
+                <span class="layer-toggle-dot dot-gray"></span>
+                <span>95% Confidence Band</span>
+              </label>
             </div>
           </div>
 
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">Model</span>
-              <span class="info-value" id="info-model-name">CALF</span>
+          <div class="toolbar-right">
+            <!-- Zoom presets -->
+            <div class="zoom-btn-group">
+              <button class="zoom-btn" id="zoom-100">Last 100</button>
+              <button class="zoom-btn" id="zoom-300">Last 300</button>
+              <button class="zoom-btn active" id="zoom-horizon">Horizon Only</button>
+              <button class="zoom-btn" id="zoom-all">All</button>
             </div>
-            <div class="info-row">
-              <span class="info-label">Backbone</span>
-              <span class="info-value" id="info-backbone">DINO-V3 (6 layers)</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Input length (T)</span>
-              <span class="info-value" id="info-input-len">96</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Horizon (H)</span>
-              <span class="info-value" id="info-horizon">96</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Channels (C)</span>
-              <span class="info-value" id="info-channels">7</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Loss</span>
-              <span class="info-value" id="info-loss">Distillation (Task + Logits + Feat)</span>
+            
+            <!-- Actions -->
+            <button class="action-btn-sm" id="btn-save-chart" title="Save Chart as PNG image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>PNG</span>
+            </button>
+            <button class="action-btn-sm" id="btn-export-csv" title="Download predictions CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              <span>CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chart Canvas -->
+        <div class="chart-wrapper">
+          <canvas id="forecastChart"></canvas>
+          <div class="chart-loading-overlay" id="chart-loader" style="display:none;">
+            <div class="spinner-large"></div>
+            <span class="loader-text">Executing CALF Cross-Modal Distillation...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEEP-DIVE ANALYSIS TABS -->
+      <section class="analysis-section" id="analysis-tabs-section">
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-distillation">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+            <span>Multi-Layer Distillation Heatmap</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-table">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Step-by-Step Forecast Table</span>
+          </button>
+          <button class="tab-btn" data-tab="tab-horizons">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <span>Horizon Scaling Benchmarks</span>
+          </button>
+        </div>
+
+        <div class="tab-content-container">
+          <!-- TAB 1: MULTI-LAYER DISTILLATION HEATMAP -->
+          <div class="tab-pane active" id="tab-distillation">
+            <div class="distill-grid">
+              <!-- Left: Layer-wise representation matching bars -->
+              <div class="distill-left">
+                <div class="pane-title-row">
+                  <h4 class="pane-title">Layer-by-Layer Cross-Modal Alignment (Student vs Teacher)</h4>
+                  <span class="sub-caption">Depth decay: &gamma; = 0.8 &bull; 6 Transformer Blocks</span>
+                </div>
+                <div class="layer-bars-container" id="layer-bars-container">
+                  <!-- Populated by JS -->
+                  <div class="layer-bar-row">
+                    <div class="layer-meta">
+                      <span class="layer-name">Layer 6 (Deep Output)</span>
+                      <span class="layer-decay-tag">Weight: 0.80</span>
+                    </div>
+                    <div class="layer-bar-track">
+                      <div class="layer-bar-fill fill-accent" style="width: 97.8%;"></div>
+                    </div>
+                    <span class="layer-score">97.8%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Mathematical formulation of Tripartite Loss -->
+              <div class="distill-right">
+                <div class="loss-formula-card">
+                  <h4 class="pane-title">Tripartite Objective Function</h4>
+                  <div class="math-box">
+                    <code>&Lscr;<sub>total</sub> = w<sub>task</sub>&Lscr;<sub>task</sub> + w<sub>logits</sub>&Lscr;<sub>logits</sub> + w<sub>feat</sub>&Lscr;<sub>feat</sub></code>
+                  </div>
+                  <ul class="loss-components-list">
+                    <li>
+                      <strong class="text-blue">&Lscr;<sub>task</sub> (Supervised):</strong> Regression against target ground truth.
+                    </li>
+                    <li>
+                      <strong class="text-purple">&Lscr;<sub>logits</sub> (Logits Matching):</strong> Aligns student prediction trajectory with foundation model teacher output.
+                    </li>
+                    <li>
+                      <strong class="text-amber">&Lscr;<sub>feat</sub> (Layer Distillation):</strong> Exponentially weighted cosine distance over intermediate hidden representations:
+                      <div class="sub-formula"><code>&sum; (0.8)<sup>6-l</sup> &bull; (1 - cos(h<sub>time</sub><sup>(l)</sup>, h<sub>teacher</sub><sup>(l)</sup>))</code></div>
+                    </li>
+                  </ul>
+                  <div class="current-weights-badge">
+                    <span>Active Weights: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- SUCCESS TOAST BANNER -->
-          <div class="success-banner" id="success-banner">
-            <div class="banner-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          <!-- TAB 2: STEP-BY-STEP TABLE (SCROLLABLE & CLEAN) -->
+          <div class="tab-pane" id="tab-table">
+            <div class="table-pane-header">
+              <div class="table-info">
+                <span>Displaying <strong>96 Forecast Timesteps</strong> for Target Variable: <strong id="lbl-table-var">close</strong></span>
+              </div>
+              <div class="table-search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="table-search" placeholder="Filter by date or step...">
+              </div>
             </div>
-            <div class="banner-text">
-              <h4 class="banner-title">Prediction completed successfully!</h4>
-              <p class="banner-desc">The model has generated the forecast for the selected configuration.</p>
+
+            <div class="table-scroll-wrapper">
+              <table class="forecast-data-table">
+                <thead>
+                  <tr>
+                    <th>Step #</th>
+                    <th>Timestamp</th>
+                    <th>Ground Truth</th>
+                    <th>CALF Prediction</th>
+                    <th>Teacher Guidance</th>
+                    <th>Delta Error</th>
+                    <th>Relative Error (%)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="forecast-table-body">
+                  <!-- Populated dynamically via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 3: HORIZON SCALING BENCHMARKS -->
+          <div class="tab-pane" id="tab-horizons">
+            <div class="horizon-table-wrapper">
+              <table class="benchmark-table">
+                <thead>
+                  <tr>
+                    <th>Horizon (pred_len)</th>
+                    <th>Equivalent Time</th>
+                    <th>MAE</th>
+                    <th>RMSE</th>
+                    <th>MAPE</th>
+                    <th>Relative Advantage (vs GPT-2)</th>
+                  </tr>
+                </thead>
+                <tbody id="horizon-benchmarks-body">
+                  <!-- Populated dynamically via JS -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -438,49 +465,37 @@
     </main>
   </div>
 
-  <!-- DATASET SWITCH MODAL -->
-  <div class="modal-overlay" id="dataset-modal" style="display:none;">
-    <div class="modal-card">
+  <!-- UPLOAD MODAL POPUP (CLEAN & NON-INTRUSIVE) -->
+  <div class="modal-backdrop" id="upload-modal" style="display:none;">
+    <div class="modal-box">
       <div class="modal-header">
-        <h3>Choose or Upload Dataset</h3>
-        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <div class="modal-title-row">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <h3 class="modal-title">Upload Custom Time-Series Dataset</h3>
+        </div>
+        <button class="modal-close" id="btn-close-modal">&times;</button>
       </div>
+
       <div class="modal-body">
-        <div class="preset-datasets">
-          <label class="preset-option active" data-dataset="btc">
-            <input type="radio" name="dataset_choice" value="btc" checked>
-            <div class="option-details">
-              <strong>BTCUSDT_15m_calf.csv</strong> (Your Private Dataset)
-              <span>70,177 timesteps, 7 channels (open, high, low, close, volume...)</span>
-            </div>
-          </label>
-
-          <label class="preset-option" data-dataset="electricity">
-            <input type="radio" name="dataset_choice" value="electricity">
-            <div class="option-details">
-              <strong>electricity.csv</strong> (Autoformer Benchmark)
-              <span>3,216 timesteps, 7 channels</span>
-            </div>
-          </label>
-
-          <label class="preset-option" data-dataset="etth1">
-            <input type="radio" name="dataset_choice" value="etth1">
-            <div class="option-details">
-              <strong>ETTh1.csv</strong> (Transformer Temperature)
-              <span>17,420 timesteps, 7 channels</span>
-            </div>
-          </label>
+        <p class="modal-desc">Upload your historical time series file (.csv). First column must be timestamp (<code>date</code>), followed by numerical feature channels.</p>
+        
+        <div class="drop-zone" id="modal-drop-zone">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
+          <span class="drop-prompt">Drag and drop your .csv file here</span>
+          <span class="drop-subprompt">or click to browse local files</span>
+          <input type="file" id="modal-file-input" accept=".csv" style="display:none;">
         </div>
 
-        <div class="drop-zone" id="drop-zone">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <p>Drag & drop your custom CSV file here, or <span class="browse-link">browse</span></p>
-          <input type="file" id="file-input" accept=".csv" style="display:none;">
+        <div class="upload-progress-container" id="upload-progress-bar" style="display:none;">
+          <div class="upload-progress-fill" id="upload-progress-fill" style="width: 0%;"></div>
         </div>
+
+        <div class="upload-feedback" id="upload-feedback"></div>
       </div>
+
       <div class="modal-footer">
-        <button class="secondary-button" id="modal-cancel-btn">Cancel</button>
-        <button class="primary-button" id="modal-apply-btn">Apply Dataset</button>
+        <button class="btn-secondary" id="btn-cancel-upload">Cancel</button>
+        <button class="btn-primary" id="btn-submit-upload" disabled>Upload & Load</button>
       </div>
     </div>
   </div>
