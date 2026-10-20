@@ -905,32 +905,9 @@ function setupEventListeners() {
     });
   }
 
-  // Sidebar Anchor Links (Smooth Navigation with synchronized active states)
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      const href = item.getAttribute('href');
-      if (href === '#distillation') {
-        switchToTab('tab-distillation');
-      } else if (href === '#benchmarks') {
-        switchToTab('tab-horizons');
-      } else if (href === '#forecasting') {
-        syncSidebarNav('nav-forecasting');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (href === '#datasets') {
-        openUploadModal();
-      }
-    });
-  });
-}
-
-function syncSidebarNav(activeId) {
-  document.querySelectorAll('.sidebar-nav .nav-item').forEach(i => {
-    if (i.id === activeId) {
-      i.classList.add('active');
-    } else {
-      i.classList.remove('active');
-    }
-  });
+  // Setup stage views and collapsible sidebar
+  setupStageViews();
+  setupSidebarCollapse();
 }
 
 // ==========================================================================
@@ -961,52 +938,98 @@ function exportForecastToCsv() {
 }
 
 // ==========================================================================
-// 13. TABS CONTROLLER (DISTILLATION, TABLE, HORIZONS)
+// 13. STAGE VIEWS & SIDEBAR CONTROLLER (ZERO-SCROLL COCKPIT)
 // ==========================================================================
 
 function setupTabs() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-tab');
-      switchToTab(targetId);
+  setupStageViews();
+  setupSidebarCollapse();
+}
+
+function setupStageViews() {
+  const tabs = document.querySelectorAll('.stage-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetView = tab.getAttribute('data-view');
+      switchToStageView(targetView);
     });
   });
 }
 
-function switchToTab(tabId) {
-  // Update Buttons
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    if (btn.getAttribute('data-tab') === tabId) {
-      btn.classList.add('active');
+function switchToStageView(targetViewId) {
+  // Update Tab buttons
+  document.querySelectorAll('.stage-tab').forEach(tab => {
+    if (tab.getAttribute('data-view') === targetViewId) {
+      tab.classList.add('active');
     } else {
-      btn.classList.remove('active');
+      tab.classList.remove('active');
     }
   });
 
-  // Update Panes
-  document.querySelectorAll('.tab-pane').forEach(pane => {
-    if (pane.id === tabId) {
-      pane.classList.add('active');
+  // Update View Panels
+  document.querySelectorAll('.stage-view-panel').forEach(panel => {
+    if (panel.id === targetViewId) {
+      panel.classList.add('active');
     } else {
-      pane.classList.remove('active');
+      panel.classList.remove('active');
     }
   });
 
-  // Synchronize sidebar navigation correctly so Datasets is NEVER highlighted for horizons
-  if (tabId === 'tab-distillation') {
-    syncSidebarNav('nav-distillation');
-  } else if (tabId === 'tab-horizons') {
-    syncSidebarNav('nav-benchmarks');
+  const chartSubbar = document.getElementById('chart-subbar');
+  const zoomControls = document.getElementById('zoom-controls');
+  const btnSaveChart = document.getElementById('btn-save-chart');
+  const btnExportCsv = document.getElementById('btn-export-csv');
+
+  if (targetViewId === 'view-chart') {
+    if (chartSubbar) chartSubbar.style.display = 'flex';
+    if (zoomControls) zoomControls.style.display = 'flex';
+    if (btnSaveChart) btnSaveChart.style.display = 'inline-flex';
+    if (btnExportCsv) btnExportCsv.style.display = 'inline-flex';
+    requestAnimationFrame(() => {
+      if (currentChart) currentChart.resize();
+    });
+  } else if (targetViewId === 'view-table') {
+    if (chartSubbar) chartSubbar.style.display = 'none';
+    if (zoomControls) zoomControls.style.display = 'none';
+    if (btnSaveChart) btnSaveChart.style.display = 'none';
+    if (btnExportCsv) btnExportCsv.style.display = 'inline-flex';
   } else {
-    syncSidebarNav('nav-forecasting');
+    // view-heatmap or view-benchmarks
+    if (chartSubbar) chartSubbar.style.display = 'none';
+    if (zoomControls) zoomControls.style.display = 'none';
+    if (btnSaveChart) btnSaveChart.style.display = 'none';
+    if (btnExportCsv) btnExportCsv.style.display = 'none';
+  }
+}
+
+function setupSidebarCollapse() {
+  const btnCollapse = document.getElementById('btn-collapse-sidebar');
+  const btnExpand = document.getElementById('btn-expand-sidebar');
+  const sidebar = document.getElementById('sidebar');
+
+  if (btnCollapse && sidebar) {
+    btnCollapse.addEventListener('click', () => {
+      sidebar.classList.add('collapsed');
+      if (btnExpand) btnExpand.style.display = 'flex';
+      setTimeout(() => {
+        if (currentChart) currentChart.resize();
+      }, 280);
+    });
   }
 
-  // Scroll smoothly to analysis section
-  const section = document.getElementById('analysis-tabs-section');
-  if (section) {
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (btnExpand && sidebar) {
+    btnExpand.addEventListener('click', () => {
+      sidebar.classList.remove('collapsed');
+      btnExpand.style.display = 'none';
+      setTimeout(() => {
+        if (currentChart) currentChart.resize();
+      }, 280);
+    });
   }
+
+  window.addEventListener('resize', () => {
+    if (currentChart) currentChart.resize();
+  });
 }
 
 // ==========================================================================

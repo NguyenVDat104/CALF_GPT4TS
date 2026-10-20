@@ -3,514 +3,439 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CALF Forecasting - Cross-modal Vision & LLM Fine-Tuning</title>
+  <title>CALF Studio — Cross-modal Vision & LLM Time Series Forecasting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2.3.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2.4.0">
   <!-- Chart.js for high performance time series rendering -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <div class="app-container">
-    <!-- LEFT SIDEBAR -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-            <polyline points="16 7 22 7 22 13"></polyline>
-          </svg>
+  <!-- TOP APP HEADER (Fixed 60px) -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+          <polyline points="16 7 22 7 22 13"></polyline>
+        </svg>
+      </div>
+      <div class="brand-title-group">
+        <h1 class="app-title">CALF Studio</h1>
+        <span class="app-subtitle">Cross-modal ViT & LLM Forecasting</span>
+      </div>
+      <span class="status-pill success">
+        <span class="pulse-dot"></span> Cloud 24/7 Active
+      </span>
+      <span class="model-badge" id="header-model-badge">DINO-V3 Bi-directional ViT</span>
+    </div>
+
+    <div class="header-right">
+      <button class="header-btn" id="btn-open-upload" title="Upload new CSV dataset">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span>Upload CSV</span>
+      </button>
+
+      <button class="icon-btn" id="theme-toggle" title="Toggle Light / Dark mode" aria-label="Toggle Theme">
+        <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+      </button>
+
+      <div class="user-chip">
+        <div class="user-avatar">Đ</div>
+        <span class="user-name">Đạt Nguyễn</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 100VH WORKSPACE COCKPIT (NO PAGE SCROLL) -->
+  <main class="workspace" id="workspace">
+    
+    <!-- LEFT SIDEBAR: PARAMETERS & KPI METRICS (Scrolls internally if needed) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top-heading">
+        <div class="heading-title-row">
+          <h2>Configuration & Performance</h2>
+          <button class="icon-btn collapse-btn" id="btn-collapse-sidebar" title="Thu gọn bảng điều khiển" aria-label="Collapse sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
         </div>
-        <div class="brand-text">
-          <h1 class="brand-title">CALF Studio</h1>
-          <span class="brand-subtitle">Cross-modal ViT & LLM</span>
-        </div>
+        <p class="sidebar-subtext">Cấu hình mô hình CALF & theo dõi chỉ số chưng cất</p>
       </div>
 
-      <nav class="sidebar-nav">
-        <a href="#forecasting" class="nav-item active" id="nav-forecasting">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-          <span>Forecasting</span>
-        </a>
-        <a href="#distillation" class="nav-item" id="nav-distillation">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
-          <span>Distillation Analysis</span>
-        </a>
-        <a href="#benchmarks" class="nav-item" id="nav-benchmarks">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="14" width="8" height="8" rx="2"></rect><rect x="2" y="14" width="8" height="8" rx="2"></rect><rect x="8" y="2" width="8" height="8" rx="2"></rect><path d="M6 14V8h12v6"></path><path d="M12 2v6"></path></svg>
-          <span>Multi-Horizons</span>
-        </a>
-        <a href="#datasets" class="nav-item" id="nav-datasets">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          <span>Datasets</span>
-        </a>
-      </nav>
+      <!-- CONFIGURATION SECTION -->
+      <section class="side-config-box">
+        <!-- Dataset & Target -->
+        <div class="side-form-group">
+          <label class="side-label" for="dataset-select">Dataset File</label>
+          <select class="side-control" id="dataset-select">
+            <option value="BTCUSDT_15m_calf.csv" selected>BTCUSDT_15m_calf.csv (Bitcoin 15m)</option>
+            <option value="electricity.csv">electricity.csv (Benchmark)</option>
+          </select>
+        </div>
 
-      <!-- Sidebar Promo Card -->
-      <div class="sidebar-promo-card">
-        <div class="promo-header">
-          <div class="promo-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+        <div class="side-form-row">
+          <div class="side-form-group flex-1">
+            <label class="side-label" for="variable-select">Target Var</label>
+            <select class="side-control" id="variable-select">
+              <option value="close" selected>close</option>
+              <option value="open">open</option>
+              <option value="high">high</option>
+              <option value="low">low</option>
+              <option value="volume">volume</option>
+            </select>
           </div>
-          <span class="promo-title">DINO-V3 + CALF</span>
+          <div class="side-form-group flex-1">
+            <label class="side-label" for="seq-len-input">Lookback (seq)</label>
+            <input type="number" class="side-control" id="seq-len-input" value="96" min="24" max="720" step="24">
+          </div>
         </div>
-        <p class="promo-desc">Bi-directional ViT representation distillation for robust long-term forecasting.</p>
-        <div class="promo-links">
-          <a href="https://github.com/NguyenVDat104/CALF_GPT4TS" target="_blank" class="promo-link">
-            <span>GitHub Repo</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17l9.2-9.2M17 17V8H8"/></svg>
-          </a>
+
+        <!-- Horizon Pills -->
+        <div class="side-form-group">
+          <div class="label-with-meta">
+            <label class="side-label">Forecast Horizon (pred_len)</label>
+            <span class="meta-tag" id="lbl-horizon-steps">96 bước (24h)</span>
+          </div>
+          <div class="horizon-pills" id="horizon-pills">
+            <button type="button" class="horizon-pill active" data-len="96">96</button>
+            <button type="button" class="horizon-pill" data-len="192">192</button>
+            <button type="button" class="horizon-pill" data-len="336">336</button>
+            <button type="button" class="horizon-pill" data-len="720">720</button>
+          </div>
         </div>
-      </div>
+
+        <!-- Model Engine & Loss -->
+        <div class="side-form-group">
+          <label class="side-label" for="backbone-select">Teacher Backbone</label>
+          <select class="side-control" id="backbone-select">
+            <option value="dinov3" selected>DINO-V3 ViT (Bi-directional) 🌟</option>
+            <option value="gpt2">GPT-2 LLM (Causal Mask)</option>
+          </select>
+        </div>
+
+        <div class="side-form-group">
+          <label class="side-label" for="distill-loss-select">Distill Metric (&Lscr;<sub>feat</sub>)</label>
+          <select class="side-control" id="distill-loss-select">
+            <option value="cosine" selected>Cosine Similarity (Optimal)</option>
+            <option value="contrastive">Contrastive InfoNCE</option>
+            <option value="smooth_l1">Smooth L1 / Huber</option>
+            <option value="l1">L1 Absolute</option>
+            <option value="mse">MSE Euclidean</option>
+          </select>
+        </div>
+
+        <!-- Run Forecast CTA Button -->
+        <button class="primary-run-btn" id="btn-run-forecast">
+          <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span class="btn-text" id="btn-text">Run Forecast</span>
+        </button>
+        <span class="shortcut-hint">Phím tắt: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+      </section>
+
+      <hr class="side-divider">
+
+      <!-- PERFORMANCE METRICS (CLUSTERED TILES) -->
+      <section class="side-metrics-section">
+        <!-- Group 1: Task Metrics -->
+        <div class="metrics-subgroup">
+          <div class="subgroup-title">🎯 Hiệu năng Dự báo (Task)</div>
+          
+          <!-- Primary MAPE Highlight Card -->
+          <div class="kpi-card highlight">
+            <div class="kpi-top">
+              <span class="kpi-label">MAPE (Sai số phần trăm)</span>
+              <span class="kpi-badge badge-primary">Chính</span>
+            </div>
+            <div class="kpi-value text-primary" id="val-mape">--</div>
+            <div class="kpi-sub">Độ chính xác tương đối trên horizon</div>
+          </div>
+
+          <div class="kpi-row-2">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">MAE</span>
+                <span class="kpi-badge">L1</span>
+              </div>
+              <div class="kpi-value" id="val-mae">--</div>
+              <div class="kpi-sub">Sai số tuyệt đối</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">RMSE</span>
+                <span class="kpi-badge">L2</span>
+              </div>
+              <div class="kpi-value" id="val-rmse">--</div>
+              <div class="kpi-sub">Sai số toàn phương</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">MDA (Độ chuẩn xu hướng)</span>
+              <span class="kpi-badge">Direction</span>
+            </div>
+            <div class="kpi-value text-accent" id="val-mda">--</div>
+            <div class="kpi-sub">Tỷ lệ dự báo đúng chiều tăng/giảm &Delta;t</div>
+          </div>
+        </div>
+
+        <!-- Group 2: Distillation Metrics -->
+        <div class="metrics-subgroup">
+          <div class="subgroup-title">🔬 Chưng cất Đa phương thức (Research)</div>
+          
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-label">Cross-Modal Alignment</span>
+              <span class="kpi-badge">Latent</span>
+            </div>
+            <div class="kpi-value text-accent" id="val-alignment">--</div>
+            <div class="kpi-sub">Độ tương đồng không gian ẩn ViT</div>
+          </div>
+
+          <div class="kpi-row-2">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Distill Loss</span>
+                <span class="kpi-badge" id="tag-distill-loss">COS</span>
+              </div>
+              <div class="kpi-value" id="val-distill-loss">--</div>
+              <div class="kpi-sub">&Lscr;<sub>feat</sub> 6 tầng ViT</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Độ trễ Latency</span>
+                <span class="kpi-badge">Speed</span>
+              </div>
+              <div class="kpi-value" id="val-latency">--</div>
+              <div class="kpi-sub">RevIN + Neural</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </aside>
 
-    <!-- MAIN VIEW -->
-    <main class="main-content">
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="topbar-welcome">
-          <div class="title-with-pill">
-            <h2 class="page-title">Time Series Forecasting with CALF</h2>
-            <span class="status-pill success" id="cloud-status-pill">
-              <span class="pulse-dot"></span> Cloud 24/7 Active
-            </span>
-            <span class="model-badge-header" id="header-model-badge">DINO-V3 Bi-directional ViT</span>
-          </div>
-          <p class="page-subtitle">Cross-modal alignment & multi-layer knowledge distillation between Foundation Models and Time Series.</p>
-        </div>
-
-        <div class="topbar-actions">
-          <button class="action-btn-outline" id="btn-open-upload" title="Upload new CSV dataset">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <span>Upload CSV</span>
+    <!-- RIGHT STAGE: MAIN VISUALIZER & MULTI-VIEW STAGE (Full Viewport Height) -->
+    <section class="stage-pane" id="stage-pane">
+      
+      <!-- STAGE TOP BAR: TABS SWITCHER + CONTROLS (Always on top of stage) -->
+      <div class="stage-toolbar">
+        <div class="stage-toolbar-left">
+          <button class="expand-btn" id="btn-expand-sidebar" title="Mở rộng thanh điều khiển" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
 
-          <button class="icon-button" id="theme-toggle" title="Toggle Light / Dark mode" aria-label="Toggle Theme">
-            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-          </button>
-          
-          <div class="user-profile" id="user-profile">
-            <div class="avatar-badge">Đ</div>
-            <span class="user-name">Đạt Nguyễn</span>
-          </div>
-        </div>
-      </header>
-
-      <!-- STREAMLINED CONFIGURATION PANEL (HORIZONTAL GRID) -->
-      <section class="control-panel-grid">
-        <!-- BLOCK 1: DATASET -->
-        <div class="panel-block" id="block-dataset">
-          <div class="block-header">
-            <span class="block-num">1</span>
-            <span class="block-title">Dataset & Target</span>
-          </div>
-          <div class="block-inputs-row">
-            <div class="form-group flex-2">
-              <label class="form-label" for="dataset-select">Dataset File</label>
-              <select class="form-control" id="dataset-select">
-                <option value="BTCUSDT_15m_calf.csv" selected>BTCUSDT_15m_calf.csv (Bitcoin 15m)</option>
-                <option value="electricity.csv">electricity.csv (Benchmark)</option>
-              </select>
-            </div>
-            <div class="form-group flex-1">
-              <label class="form-label" for="variable-select">Target Var</label>
-              <select class="form-control" id="variable-select">
-                <option value="close" selected>close</option>
-                <option value="open">open</option>
-                <option value="high">high</option>
-                <option value="low">low</option>
-                <option value="volume">volume</option>
-              </select>
-            </div>
-          </div>
-          <div class="block-meta-chips">
-            <span class="meta-chip" id="meta-shape">70,177 rows • 7 channels</span>
-            <span class="meta-chip-badge" id="meta-status">Ready</span>
-          </div>
-        </div>
-
-        <!-- BLOCK 2: WINDOWS & HORIZONS -->
-        <div class="panel-block" id="block-windows">
-          <div class="block-header">
-            <span class="block-num">2</span>
-            <span class="block-title">Temporal Horizon</span>
-          </div>
-          <div class="block-inputs-row">
-            <div class="form-group flex-1">
-              <label class="form-label" for="seq-len-input">Lookback (seq)</label>
-              <input type="number" class="form-control" id="seq-len-input" value="96" min="24" max="720" step="24">
-            </div>
-            <div class="form-group flex-2">
-              <label class="form-label">Forecast Horizon (pred_len)</label>
-              <div class="horizon-pills" id="horizon-pills">
-                <button type="button" class="horizon-pill active" data-len="96">96</button>
-                <button type="button" class="horizon-pill" data-len="192">192</button>
-                <button type="button" class="horizon-pill" data-len="336">336</button>
-                <button type="button" class="horizon-pill" data-len="720">720</button>
-              </div>
-            </div>
-          </div>
-          <div class="block-meta-chips">
-            <span class="meta-chip">Horizon: <strong id="lbl-horizon-steps">96 steps (24h)</strong></span>
-            <span class="meta-chip">Stride: <strong>1</strong></span>
-          </div>
-        </div>
-
-        <!-- BLOCK 3: CROSS-MODAL DISTILLATION -->
-        <div class="panel-block" id="block-architecture">
-          <div class="block-header">
-            <span class="block-num">3</span>
-            <span class="block-title">CALF Distillation Engine</span>
-          </div>
-          <div class="block-inputs-row">
-            <div class="form-group flex-1">
-              <label class="form-label" for="backbone-select">Teacher Backbone</label>
-              <select class="form-control" id="backbone-select">
-                <option value="dinov3" selected>DINO-V3 ViT (Bi-directional) 🌟</option>
-                <option value="gpt2">GPT-2 LLM (Causal Mask)</option>
-              </select>
-            </div>
-            <div class="form-group flex-1">
-              <label class="form-label" for="distill-loss-select">Distill Metric (L_feat)</label>
-              <select class="form-control" id="distill-loss-select">
-                <option value="cosine" selected>Cosine Similarity (Optimal)</option>
-                <option value="contrastive">Contrastive InfoNCE</option>
-                <option value="smooth_l1">Smooth L1 / Huber</option>
-                <option value="l1">L1 Absolute</option>
-                <option value="mse">MSE Euclidean</option>
-              </select>
-            </div>
-          </div>
-          <div class="block-meta-chips">
-            <span class="meta-chip">Encoder: <strong id="lbl-encoder">PCA Word Alignment</strong></span>
-            <span class="meta-chip">Feature W: <strong>0.01 (γ=0.8)</strong></span>
-          </div>
-        </div>
-
-        <!-- BLOCK 4: RUN BUTTON -->
-        <div class="panel-block run-block" id="block-run">
-          <button class="run-button" id="btn-run-forecast">
-            <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
-            <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span class="btn-text" id="btn-text">Run Forecast</span>
-          </button>
-          <div class="run-caption">
-            <span>Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
-          </div>
-        </div>
-      </section>
-
-      <!-- DUAL METRICS SECTIONS: TASK PERFORMANCE & DISTILLATION RESEARCH -->
-      <section class="metrics-super-container" id="metrics-ribbon">
-        <!-- GROUP A: TASK PERFORMANCE (DỰ BÁO CHUỖI THỜI GIAN) -->
-        <div class="metrics-cluster cluster-task">
-          <div class="cluster-header">
-            <span class="cluster-title">🎯 Hiệu năng Dự báo (Task Metrics)</span>
-            <span class="cluster-caption">Đo lường trên khoảng dự báo Out-of-Sample</span>
-          </div>
-          <div class="metrics-grid-task">
-            <!-- MAE -->
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-title">MAE (Sai số tuyệt đối)</span>
-                <span class="metric-tag">L1 Error</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val" id="val-mae">--</span>
-              </div>
-              <div class="metric-footer">Độ lệch tuyệt đối trung bình so với thực tế</div>
-            </div>
-
-            <!-- RMSE -->
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-title">RMSE (Sai số toàn phương)</span>
-                <span class="metric-tag">L2 Penalty</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val" id="val-rmse">--</span>
-              </div>
-              <div class="metric-footer">Mức độ phạt các điểm sai số đột biến</div>
-            </div>
-
-            <!-- MAPE (PRIMARY HIGHLIGHT) -->
-            <div class="metric-card highlight">
-              <div class="metric-header">
-                <span class="metric-title">MAPE (Sai số phần trăm)</span>
-                <span class="metric-tag tag-primary">Chỉ số chính</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val text-primary" id="val-mape">--</span>
-              </div>
-              <div class="metric-footer">Độ chính xác tương đối của mô hình</div>
-            </div>
-
-            <!-- MDA (DIRECTIONAL ACCURACY) -->
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-title">MDA (Độ chuẩn xu hướng)</span>
-                <span class="metric-tag">Direction</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val text-primary" id="val-mda">--</span>
-              </div>
-              <div class="metric-footer">Tỷ lệ dự báo đúng chiều tăng/giảm &Delta;t</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- GROUP B: DISTILLATION RESEARCH (CHƯNG CẤT ĐA PHƯƠNG THỨC) -->
-        <div class="metrics-cluster cluster-research">
-          <div class="cluster-header">
-            <span class="cluster-title">🔬 Chưng cất Đa phương thức (Research & Distillation)</span>
-            <span class="cluster-caption">Căn chỉnh biểu diễn ẩn giữa Foundation Model & Time Series</span>
-          </div>
-          <div class="metrics-grid-distill">
-            <!-- CROSS-MODAL ALIGNMENT -->
-            <div class="metric-card accent">
-              <div class="metric-header">
-                <span class="metric-title">Cross-Modal Alignment</span>
-                <span class="metric-tag">ViT Latent</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val text-accent" id="val-alignment">--</span>
-              </div>
-              <div class="metric-footer" id="val-alignment-desc">Độ tương đồng cosine không gian ẩn ViT</div>
-            </div>
-
-            <!-- FEATURE DISTILL LOSS -->
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-title">Distill Loss (&Lscr;<sub>feat</sub>)</span>
-                <span class="metric-tag" id="tag-distill-loss">COSINE</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val" id="val-distill-loss">--</span>
-              </div>
-              <div class="metric-footer">Sai số căn chỉnh 6 tầng Transformer</div>
-            </div>
-
-            <!-- INFERENCE LATENCY -->
-            <div class="metric-card">
-              <div class="metric-header">
-                <span class="metric-title">Độ trễ Suy luận</span>
-                <span class="metric-tag">Latency</span>
-              </div>
-              <div class="metric-value-row">
-                <span class="metric-val" id="val-latency">--</span>
-              </div>
-              <div class="metric-footer" id="val-latency-desc">Tốc độ suy luận RevIN + Neural Projection</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- MAIN VISUALIZER & CHART SECTION -->
-      <section class="visualizer-card" id="visualizer-section">
-        <!-- Visualizer Top Bar with Multi-Modal Toggles & Zoom -->
-        <div class="visualizer-toolbar">
-          <div class="toolbar-left">
-            <h3 class="chart-heading">Forecast Horizon & Model Alignment</h3>
-            <div class="layer-toggles">
-              <label class="layer-toggle-label" title="Dữ liệu thực tế quan sát được">
-                <input type="checkbox" id="toggle-ground-truth" checked>
-                <span class="layer-toggle-dot dot-orange"></span>
-                <span>Ground Truth (Thực tế)</span>
-              </label>
-              <label class="layer-toggle-label" title="Dự báo từ mô hình học sinh CALF sau khi chưng cất">
-                <input type="checkbox" id="toggle-calf" checked>
-                <span class="layer-toggle-dot dot-blue"></span>
-                <span>CALF Student Forecast</span>
-              </label>
-              <label class="layer-toggle-label" title="Định hướng vĩ mô từ giáo viên DINO-V3/GPT-2">
-                <input type="checkbox" id="toggle-teacher" checked>
-                <span class="layer-toggle-dot dot-purple"></span>
-                <span>Teacher Guidance (ViT/LLM)</span>
-              </label>
-              <label class="layer-toggle-label" title="Mô hình cơ sở lặp lại giá trị cuối của lookback">
-                <input type="checkbox" id="toggle-naive">
-                <span class="layer-toggle-dot dot-naive"></span>
-                <span>Naive Baseline (Persistence)</span>
-              </label>
-              <label class="layer-toggle-label" title="Khoảng tin cậy xác suất 95%">
-                <input type="checkbox" id="toggle-confidence" checked>
-                <span class="layer-toggle-dot dot-gray"></span>
-                <span>95% Confidence Band</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="toolbar-right">
-            <!-- Zoom presets -->
-            <div class="zoom-btn-group">
-              <button class="zoom-btn" id="zoom-100">Last 100</button>
-              <button class="zoom-btn" id="zoom-300">Last 300</button>
-              <button class="zoom-btn active" id="zoom-horizon">Horizon Only</button>
-              <button class="zoom-btn" id="zoom-all">All</button>
-            </div>
-            
-            <!-- Actions -->
-            <button class="action-btn-sm" id="btn-save-chart" title="Save Chart as PNG image">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>PNG</span>
+          <!-- STAGE VIEWS SWITCHER (Segmented control) -->
+          <nav class="stage-nav-tabs">
+            <button class="stage-tab active" data-view="view-chart" id="tab-btn-chart">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>Forecast Visualizer</span>
             </button>
-            <button class="action-btn-sm" id="btn-export-csv" title="Download predictions CSV">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              <span>CSV</span>
+            <button class="stage-tab" data-view="view-heatmap" id="tab-btn-heatmap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+              <span>Distillation Heatmap</span>
             </button>
+            <button class="stage-tab" data-view="view-table" id="tab-btn-table">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Step-by-Step Table</span>
+            </button>
+            <button class="stage-tab" data-view="view-benchmarks" id="tab-btn-benchmarks">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              <span>Multi-Horizons</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="stage-toolbar-right">
+          <!-- ZOOM PRESETS (for chart view) -->
+          <div class="zoom-btn-group" id="zoom-controls">
+            <button class="zoom-btn" id="zoom-100">100</button>
+            <button class="zoom-btn" id="zoom-300">300</button>
+            <button class="zoom-btn active" id="zoom-horizon">Horizon</button>
+            <button class="zoom-btn" id="zoom-all">All</button>
+          </div>
+
+          <!-- ACTIONS -->
+          <button class="stage-action-btn" id="btn-save-chart" title="Save Chart as PNG image">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>PNG</span>
+          </button>
+          <button class="stage-action-btn" id="btn-export-csv" title="Download predictions CSV">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span>CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- LAYER TOGGLES & BACKTEST NOTICE RIBBON -->
+      <div class="stage-subbar" id="chart-subbar">
+        <div class="layer-toggles">
+          <label class="layer-toggle-label" title="Dữ liệu quan sát thực tế">
+            <input type="checkbox" id="toggle-ground-truth" checked>
+            <span class="toggle-dot dot-orange"></span>
+            <span>Ground Truth</span>
+          </label>
+          <label class="layer-toggle-label" title="Dự báo học sinh CALF sau chưng cất">
+            <input type="checkbox" id="toggle-calf" checked>
+            <span class="toggle-dot dot-blue"></span>
+            <span>CALF Student</span>
+          </label>
+          <label class="layer-toggle-label" title="Định hướng ngữ nghĩa vĩ mô từ giáo viên ViT">
+            <input type="checkbox" id="toggle-teacher" checked>
+            <span class="toggle-dot dot-purple"></span>
+            <span>Teacher ViT</span>
+          </label>
+          <label class="layer-toggle-label" title="Mô hình Persistence lặp lại giá trị cuối lookback">
+            <input type="checkbox" id="toggle-naive">
+            <span class="toggle-dot dot-naive"></span>
+            <span>Naive Baseline</span>
+          </label>
+          <label class="layer-toggle-label" title="Dải tin cậy xác suất 95%">
+            <input type="checkbox" id="toggle-confidence" checked>
+            <span class="toggle-dot dot-gray"></span>
+            <span>95% CI Band</span>
+          </label>
+        </div>
+
+        <div class="backtest-notice">
+          <span class="notice-badge">Backtest</span>
+          <span class="notice-text">Đánh giá Out-of-Sample trên chuỗi lịch sử đã biết &bull; Dải tin cậy: <code>&ycirc; &plusmn; 1.96&sigma;<sub>res</sub></code></span>
+        </div>
+      </div>
+
+      <!-- STAGE CONTENT VIEWPORT (100% Height Fill) -->
+      <div class="stage-viewport">
+        
+        <!-- VIEW 1: TIME SERIES CHART -->
+        <div class="stage-view-panel active" id="view-chart">
+          <div class="chart-canvas-container">
+            <canvas id="forecastChart"></canvas>
+            <div class="chart-loading-overlay" id="chart-loader" style="display:none;">
+              <div class="spinner-large"></div>
+              <span class="loader-text">Executing CALF Cross-Modal Distillation...</span>
+            </div>
           </div>
         </div>
 
-        <!-- BACKTEST & RESIDUAL EXPLANATION BANNER -->
-        <div class="backtest-disclaimer">
-          <div class="disclaimer-badge">Chế độ Thẩm định</div>
-          <div class="disclaimer-text">
-            <strong>Out-of-Sample Backtest:</strong> Biểu đồ chạy đối soát trên chuỗi dữ liệu thực tế đã biết (Ground Truth cam) để kiểm chứng sai số trước khi dự báo tương lai. Dải tin cậy 95% được tính theo phân phối sai số residual thực nghiệm: <code>&ycirc; &plusmn; 1.96 &bull; &sigma;<sub>res</sub></code>.
-          </div>
-        </div>
-
-        <!-- Chart Canvas -->
-        <div class="chart-wrapper">
-          <canvas id="forecastChart"></canvas>
-          <div class="chart-loading-overlay" id="chart-loader" style="display:none;">
-            <div class="spinner-large"></div>
-            <span class="loader-text">Executing CALF Cross-Modal Distillation...</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- DEEP-DIVE ANALYSIS TABS -->
-      <section class="analysis-section" id="analysis-tabs-section">
-        <div class="tabs-header">
-          <button class="tab-btn active" data-tab="tab-distillation">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
-            <span>Multi-Layer Distillation Heatmap</span>
-          </button>
-          <button class="tab-btn" data-tab="tab-table">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Step-by-Step Forecast Table</span>
-          </button>
-          <button class="tab-btn" data-tab="tab-horizons">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-            <span>Horizon Scaling Benchmarks</span>
-          </button>
-        </div>
-
-        <div class="tab-content-container">
-          <!-- TAB 1: MULTI-LAYER DISTILLATION HEATMAP -->
-          <div class="tab-pane active" id="tab-distillation">
-            <div class="distill-grid">
+        <!-- VIEW 2: MULTI-LAYER DISTILLATION HEATMAP -->
+        <div class="stage-view-panel" id="view-heatmap">
+          <div class="panel-scroll-inner">
+            <div class="distill-split-grid">
               <!-- Left: Layer-wise representation matching bars -->
-              <div class="distill-left">
-                <div class="pane-title-row">
-                  <h4 class="pane-title">Layer-by-Layer Cross-Modal Alignment (Student vs Teacher)</h4>
-                  <span class="sub-caption">Depth decay: &gamma; = 0.8 &bull; 6 Transformer Blocks</span>
+              <div class="distill-card">
+                <div class="distill-card-header">
+                  <h3 class="distill-title">Căn chỉnh Biểu diễn Đa tầng (Student vs Teacher ViT)</h3>
+                  <span class="distill-sub">Độ suy giảm theo chiều sâu: &gamma; = 0.8 &bull; 6 Khối Transformer</span>
                 </div>
                 <div class="layer-bars-container" id="layer-bars-container">
                   <!-- Populated by JS -->
-                  <div class="layer-bar-row">
-                    <div class="layer-meta">
-                      <span class="layer-name">Layer 6 (Deep Output)</span>
-                      <span class="layer-decay-tag">Weight: 0.80</span>
-                    </div>
-                    <div class="layer-bar-track">
-                      <div class="layer-bar-fill fill-accent" style="width: 97.8%;"></div>
-                    </div>
-                    <span class="layer-score">97.8%</span>
-                  </div>
                 </div>
               </div>
 
               <!-- Right: Mathematical formulation of Tripartite Loss -->
-              <div class="distill-right">
-                <div class="loss-formula-card">
-                  <h4 class="pane-title">Tripartite Objective Function</h4>
-                  <div class="math-box">
-                    <code>&Lscr;<sub>total</sub> = w<sub>task</sub>&Lscr;<sub>task</sub> + w<sub>logits</sub>&Lscr;<sub>logits</sub> + w<sub>feat</sub>&Lscr;<sub>feat</sub></code>
-                  </div>
-                  <ul class="loss-components-list">
-                    <li>
-                      <strong class="text-blue">&Lscr;<sub>task</sub> (Supervised):</strong> Regression against target ground truth.
-                    </li>
-                    <li>
-                      <strong class="text-purple">&Lscr;<sub>logits</sub> (Logits Matching):</strong> Aligns student prediction trajectory with foundation model teacher output.
-                    </li>
-                    <li>
-                      <strong class="text-amber">&Lscr;<sub>feat</sub> (Layer Distillation):</strong> Exponentially weighted cosine distance over intermediate hidden representations:
-                      <div class="sub-formula"><code>&sum; (0.8)<sup>6-l</sup> &bull; (1 - cos(h<sub>time</sub><sup>(l)</sup>, h<sub>teacher</sub><sup>(l)</sup>))</code></div>
-                    </li>
-                  </ul>
-                  <div class="current-weights-badge">
-                    <span>Active Weights: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong></span>
-                  </div>
+              <div class="distill-card">
+                <div class="distill-card-header">
+                  <h3 class="distill-title">Mục tiêu Tối ưu Tripartite Loss</h3>
+                  <span class="distill-sub">Kết hợp hàm mất mát 3 thành phần trong CALF</span>
+                </div>
+                <div class="math-box">
+                  <code>&Lscr;<sub>total</sub> = w<sub>task</sub>&Lscr;<sub>task</sub> + w<sub>logits</sub>&Lscr;<sub>logits</sub> + w<sub>feat</sub>&Lscr;<sub>feat</sub></code>
+                </div>
+                <ul class="loss-list">
+                  <li>
+                    <strong class="text-blue">&Lscr;<sub>task</sub> (Supervised Regression):</strong> Huấn luyện bám sát Ground Truth thực tế bằng hàm Smooth L1/MSE.
+                  </li>
+                  <li>
+                    <strong class="text-purple">&Lscr;<sub>logits</sub> (Logits Matching):</strong> Định hướng quỹ đạo dự báo của học sinh theo phân phối đầu ra của Foundation Model.
+                  </li>
+                  <li>
+                    <strong class="text-amber">&Lscr;<sub>feat</sub> (Layer Representation Distillation):</strong> Khoảng cách Cosine có trọng số suy giảm hàm mũ qua các tầng biểu diễn ẩn:
+                    <div class="sub-formula"><code>&sum; (0.8)<sup>6-l</sup> &bull; (1 - cos(h<sub>time</sub><sup>(l)</sup>, h<sub>teacher</sub><sup>(l)</sup>))</code></div>
+                  </li>
+                </ul>
+                <div class="active-weights-bar">
+                  <span>Trọng số hiện hành: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong></span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- TAB 2: STEP-BY-STEP TABLE (SCROLLABLE & CLEAN) -->
-          <div class="tab-pane" id="tab-table">
-            <div class="table-pane-header">
-              <div class="table-info">
-                <span>Displaying <strong>96 Forecast Timesteps</strong> for Target Variable: <strong id="lbl-table-var">close</strong></span>
+        <!-- VIEW 3: STEP-BY-STEP FORECAST TABLE -->
+        <div class="stage-view-panel" id="view-table">
+          <div class="table-pane-wrapper">
+            <div class="table-pane-top">
+              <div class="table-summary-info">
+                <span>Dữ liệu chi tiết <strong>96 bước dự báo</strong> cho biến: <strong id="lbl-table-var">close</strong></span>
               </div>
               <div class="table-search-box">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="table-search" placeholder="Filter by date or step...">
+                <input type="text" id="table-search" placeholder="Tìm theo bước hoặc ngày...">
               </div>
             </div>
 
-            <div class="table-scroll-wrapper">
-              <table class="forecast-data-table">
+            <div class="table-container">
+              <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Step #</th>
-                    <th>Timestamp</th>
+                    <th>Bước #</th>
+                    <th>Thời gian</th>
                     <th>Ground Truth</th>
-                    <th>CALF Prediction</th>
-                    <th>Teacher Guidance</th>
+                    <th>CALF Dự báo</th>
+                    <th>Teacher ViT</th>
                     <th>Naive Baseline</th>
-                    <th>Delta Error</th>
-                    <th>Relative Error (%)</th>
-                    <th>Status</th>
+                    <th>Sai số tuyệt đối</th>
+                    <th>Sai số (%)</th>
+                    <th>Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody id="forecast-table-body">
-                  <!-- Populated dynamically via JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- TAB 3: HORIZON SCALING BENCHMARKS -->
-          <div class="tab-pane" id="tab-horizons">
-            <div class="horizon-table-wrapper">
-              <table class="benchmark-table">
-                <thead>
-                  <tr>
-                    <th>Horizon (pred_len)</th>
-                    <th>Equivalent Time</th>
-                    <th>MAE</th>
-                    <th>RMSE</th>
-                    <th>MAPE</th>
-                    <th>MDA (Directional)</th>
-                    <th>Relative Advantage (vs GPT-2)</th>
-                  </tr>
-                </thead>
-                <tbody id="horizon-benchmarks-body">
-                  <!-- Populated dynamically via JS -->
+                  <!-- Populated by JS -->
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-      </section>
-    </main>
-  </div>
 
-  <!-- UPLOAD MODAL POPUP (CLEAN & NON-INTRUSIVE) -->
+        <!-- VIEW 4: HORIZON SCALING BENCHMARKS -->
+        <div class="stage-view-panel" id="view-benchmarks">
+          <div class="benchmarks-pane-wrapper">
+            <div class="benchmarks-header">
+              <h3 class="benchmarks-title">So sánh Hiệu năng theo Đa Chân trời Dự báo (Multi-Horizons)</h3>
+              <p class="benchmarks-desc">Kiểm chứng độ bền vững của mô hình CALF khi mở rộng độ dài dự báo từ 96 đến 720 bước thời gian.</p>
+            </div>
+            
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Horizon (pred_len)</th>
+                    <th>Quy đổi Thời gian</th>
+                    <th>MAE</th>
+                    <th>RMSE</th>
+                    <th>MAPE</th>
+                    <th>MDA (Xu hướng)</th>
+                    <th>Ưu thế tương đối (vs GPT-2)</th>
+                  </tr>
+                </thead>
+                <tbody id="horizon-benchmarks-body">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- UPLOAD MODAL POPUP (CLEAN DIALOG) -->
   <div class="modal-backdrop" id="upload-modal" style="display:none;">
     <div class="modal-box">
       <div class="modal-header">
@@ -522,12 +447,12 @@
       </div>
 
       <div class="modal-body">
-        <p class="modal-desc">Upload your historical time series file (.csv). First column must be timestamp (<code>date</code>), followed by numerical feature channels.</p>
+        <p class="modal-desc">Tải lên file chuỗi thời gian của bạn (.csv). Cột đầu tiên phải là mốc thời gian (<code>date</code>), theo sau là các kênh đặc trưng số.</p>
         
         <div class="drop-zone" id="modal-drop-zone">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
-          <span class="drop-prompt">Drag and drop your .csv file here</span>
-          <span class="drop-subprompt">or click to browse local files</span>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
+          <span class="drop-prompt">Kéo thả file .csv vào đây</span>
+          <span class="drop-subprompt">hoặc bấm để duyệt file từ máy tính</span>
           <input type="file" id="modal-file-input" accept=".csv" style="display:none;">
         </div>
 
@@ -545,6 +470,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=2.3.0"></script>
+  <script src="app.js?v=2.4.0"></script>
 </body>
 </html>
