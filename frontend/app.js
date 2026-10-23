@@ -810,7 +810,12 @@ function setupEventListeners() {
       const horizonLabel = document.getElementById('lbl-horizon-steps');
       if (horizonLabel) {
         const hours = (len * 15) / 60;
-        horizonLabel.textContent = `${len} steps (${hours}h)`;
+        horizonLabel.textContent = `${len} bước (${hours}h)`;
+      }
+
+      const pipelineHorizon = document.getElementById('pipeline-horizon-text');
+      if (pipelineHorizon) {
+        pipelineHorizon.textContent = `Dự Báo (H=${len})`;
       }
 
       triggerForecast();
@@ -823,13 +828,16 @@ function setupEventListeners() {
       appState.backbone = e.target.value;
       const headerBadge = document.getElementById('header-model-badge');
       const encoderLbl = document.getElementById('lbl-encoder');
+      const pipelineTeacher = document.getElementById('pipeline-teacher-name');
 
       if (e.target.value === 'dinov3') {
         if (headerBadge) headerBadge.textContent = 'DINO-V3 Bi-directional ViT';
         if (encoderLbl) encoderLbl.textContent = 'Patch Token Distill';
+        if (pipelineTeacher) pipelineTeacher.textContent = 'DINO-V3 ViT Teacher';
       } else {
         if (headerBadge) headerBadge.textContent = 'GPT-2 Causal LLM';
         if (encoderLbl) encoderLbl.textContent = 'Word Embedding Alignment';
+        if (pipelineTeacher) pipelineTeacher.textContent = 'GPT-2 LLM Teacher';
       }
 
       triggerForecast();

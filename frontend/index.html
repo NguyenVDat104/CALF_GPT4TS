@@ -52,200 +52,219 @@
   <!-- 100VH WORKSPACE COCKPIT (NO PAGE SCROLL) -->
   <main class="workspace" id="workspace">
     
-    <!-- LEFT SIDEBAR: PARAMETERS & KPI METRICS (Scrolls internally if needed) -->
+    <!-- LEFT SIDEBAR: CALF ALGORITHM PIPELINE CONTROLLER -->
     <aside class="sidebar" id="sidebar">
+      
+      <!-- SIDEBAR HEADER -->
       <div class="sidebar-top-heading">
         <div class="heading-title-row">
-          <h2>Configuration & Performance</h2>
-          <button class="icon-btn collapse-btn" id="btn-collapse-sidebar" title="Thu gọn bảng điều khiển" aria-label="Collapse sidebar">
+          <div class="heading-brand">
+            <span class="algo-pill">THUẬT TOÁN CALF</span>
+            <h2>Điều Khiển & Chỉ Số</h2>
+          </div>
+          <button class="icon-btn collapse-btn" id="btn-collapse-sidebar" title="Thu gọn thanh điều khiển" aria-label="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
         </div>
-        <p class="sidebar-subtext">Cấu hình mô hình CALF & theo dõi chỉ số chưng cất</p>
       </div>
 
-      <!-- CONFIGURATION SECTION -->
-      <section class="side-config-box">
-        <!-- Dataset & Target -->
-        <div class="side-form-group">
-          <label class="side-label" for="dataset-select">Dataset File</label>
-          <select class="side-control" id="dataset-select">
-            <option value="BTCUSDT_15m_calf.csv" selected>BTCUSDT_15m_calf.csv (Bitcoin 15m)</option>
-            <option value="electricity.csv">electricity.csv (Benchmark)</option>
-          </select>
+      <!-- PILLAR 01: INPUT DATA & TEMPORAL HORIZON -->
+      <section class="algo-pillar-card">
+        <div class="pillar-header">
+          <span class="pillar-badge">01</span>
+          <div class="pillar-title-group">
+            <h3 class="pillar-title">Dữ Liệu & Chân Trời (Input & Horizon)</h3>
+            <span class="pillar-subtitle">Chuẩn hóa Reversible Normalization (RevIN)</span>
+          </div>
         </div>
 
-        <div class="side-form-row">
-          <div class="side-form-group flex-1">
-            <label class="side-label" for="variable-select">Target Var</label>
-            <select class="side-control" id="variable-select">
-              <option value="close" selected>close</option>
-              <option value="open">open</option>
-              <option value="high">high</option>
-              <option value="low">low</option>
-              <option value="volume">volume</option>
+        <div class="pillar-body">
+          <div class="side-form-group">
+            <label class="side-label" for="dataset-select">Chuỗi Dữ Liệu (Dataset File)</label>
+            <select class="side-control" id="dataset-select">
+              <option value="BTCUSDT_15m_calf.csv" selected>BTCUSDT_15m_calf.csv (Bitcoin 15m)</option>
+              <option value="electricity.csv">electricity.csv (Benchmark)</option>
             </select>
           </div>
-          <div class="side-form-group flex-1">
-            <label class="side-label" for="seq-len-input">Lookback (seq)</label>
-            <input type="number" class="side-control" id="seq-len-input" value="96" min="24" max="720" step="24">
-          </div>
-        </div>
 
-        <!-- Horizon Pills -->
-        <div class="side-form-group">
-          <div class="label-with-meta">
-            <label class="side-label">Forecast Horizon (pred_len)</label>
-            <span class="meta-tag" id="lbl-horizon-steps">96 bước (24h)</span>
-          </div>
-          <div class="horizon-pills" id="horizon-pills">
-            <button type="button" class="horizon-pill active" data-len="96">96</button>
-            <button type="button" class="horizon-pill" data-len="192">192</button>
-            <button type="button" class="horizon-pill" data-len="336">336</button>
-            <button type="button" class="horizon-pill" data-len="720">720</button>
-          </div>
-        </div>
-
-        <!-- Model Engine & Loss -->
-        <div class="side-form-group">
-          <label class="side-label" for="backbone-select">Teacher Backbone</label>
-          <select class="side-control" id="backbone-select">
-            <option value="dinov3" selected>DINO-V3 ViT (Bi-directional) 🌟</option>
-            <option value="gpt2">GPT-2 LLM (Causal Mask)</option>
-          </select>
-        </div>
-
-        <div class="side-form-group">
-          <label class="side-label" for="distill-loss-select">Distill Metric (&Lscr;<sub>feat</sub>)</label>
-          <select class="side-control" id="distill-loss-select">
-            <option value="cosine" selected>Cosine Similarity (Optimal)</option>
-            <option value="contrastive">Contrastive InfoNCE</option>
-            <option value="smooth_l1">Smooth L1 / Huber</option>
-            <option value="l1">L1 Absolute</option>
-            <option value="mse">MSE Euclidean</option>
-          </select>
-        </div>
-
-        <!-- Run Forecast CTA Button -->
-        <button class="primary-run-btn" id="btn-run-forecast">
-          <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
-          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-          <span class="btn-text" id="btn-text">Run Forecast</span>
-        </button>
-        <span class="shortcut-hint">Phím tắt: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
-      </section>
-
-      <hr class="side-divider">
-
-      <!-- PERFORMANCE METRICS (CLUSTERED TILES) -->
-      <section class="side-metrics-section">
-        <!-- Group 1: Task Metrics -->
-        <div class="metrics-subgroup">
-          <div class="subgroup-title">🎯 Hiệu năng Dự báo (Task)</div>
-          
-          <!-- Primary MAPE Highlight Card -->
-          <div class="kpi-card highlight">
-            <div class="kpi-top">
-              <span class="kpi-label">MAPE (Sai số phần trăm)</span>
-              <span class="kpi-badge badge-primary">Chính</span>
+          <div class="side-form-row">
+            <div class="side-form-group flex-1">
+              <label class="side-label" for="variable-select">Kênh Mục Tiêu (Target)</label>
+              <select class="side-control" id="variable-select">
+                <option value="close" selected>close (Giá đóng cửa)</option>
+                <option value="open">open</option>
+                <option value="high">high</option>
+                <option value="low">low</option>
+                <option value="volume">volume</option>
+              </select>
             </div>
-            <div class="kpi-value text-primary" id="val-mape">--</div>
-            <div class="kpi-sub">Độ chính xác tương đối trên horizon</div>
-          </div>
-
-          <div class="kpi-row-2">
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span class="kpi-label">MAE</span>
-                <span class="kpi-badge">L1</span>
-              </div>
-              <div class="kpi-value" id="val-mae">--</div>
-              <div class="kpi-sub">Sai số tuyệt đối</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span class="kpi-label">RMSE</span>
-                <span class="kpi-badge">L2</span>
-              </div>
-              <div class="kpi-value" id="val-rmse">--</div>
-              <div class="kpi-sub">Sai số toàn phương</div>
+            <div class="side-form-group flex-1">
+              <label class="side-label" for="seq-len-input">Lookback (L)</label>
+              <input type="number" class="side-control" id="seq-len-input" value="96" min="24" max="720" step="24">
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-label">MDA (Độ chuẩn xu hướng)</span>
-              <span class="kpi-badge">Direction</span>
+          <!-- Horizon Selector -->
+          <div class="side-form-group">
+            <div class="label-with-meta">
+              <label class="side-label">Chân Trời Dự Báo (pred_len)</label>
+              <span class="meta-tag" id="lbl-horizon-steps">96 bước (24h)</span>
             </div>
-            <div class="kpi-value text-accent" id="val-mda">--</div>
-            <div class="kpi-sub">Tỷ lệ dự báo đúng chiều tăng/giảm &Delta;t</div>
-          </div>
-        </div>
-
-        <!-- Group 2: Distillation Metrics -->
-        <div class="metrics-subgroup">
-          <div class="subgroup-title">🔬 Chưng cất Đa phương thức (Research)</div>
-          
-          <div class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-label">Cross-Modal Alignment</span>
-              <span class="kpi-badge">Latent</span>
-            </div>
-            <div class="kpi-value text-accent" id="val-alignment">--</div>
-            <div class="kpi-sub">Độ tương đồng không gian ẩn ViT</div>
-          </div>
-
-          <div class="kpi-row-2">
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Distill Loss</span>
-                <span class="kpi-badge" id="tag-distill-loss">COS</span>
-              </div>
-              <div class="kpi-value" id="val-distill-loss">--</div>
-              <div class="kpi-sub">&Lscr;<sub>feat</sub> 6 tầng ViT</div>
-            </div>
-
-            <div class="kpi-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Độ trễ Latency</span>
-                <span class="kpi-badge">Speed</span>
-              </div>
-              <div class="kpi-value" id="val-latency">--</div>
-              <div class="kpi-sub">RevIN + Neural</div>
+            <div class="horizon-pills" id="horizon-pills">
+              <button type="button" class="horizon-pill active" data-len="96">96 (24h)</button>
+              <button type="button" class="horizon-pill" data-len="192">192 (48h)</button>
+              <button type="button" class="horizon-pill" data-len="336">336 (3.5d)</button>
+              <button type="button" class="horizon-pill" data-len="720">720 (7.5d)</button>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- PILLAR 02: DUAL BACKBONE & TRIPARTITE DISTILLATION -->
+      <section class="algo-pillar-card">
+        <div class="pillar-header">
+          <span class="pillar-badge">02</span>
+          <div class="pillar-title-group">
+            <h3 class="pillar-title">Mô Hình & Chưng Cất (Backbone & Loss)</h3>
+            <span class="pillar-subtitle">Tripartite Loss: &Lscr;<sub>task</sub> + &Lscr;<sub>logits</sub> + &Lscr;<sub>feat</sub></span>
+          </div>
+        </div>
+
+        <div class="pillar-body">
+          <div class="side-form-group">
+            <label class="side-label" for="backbone-select">Giáo Viên ViT (Teacher Backbone)</label>
+            <select class="side-control" id="backbone-select">
+              <option value="dinov3" selected>DINO-V3 ViT (Bi-directional Self-Attention) 🌟</option>
+              <option value="gpt2">GPT-2 LLM (Causal Mask)</option>
+            </select>
+          </div>
+
+          <div class="side-form-group">
+            <label class="side-label" for="distill-loss-select">Hàm Khoảng Cách Biểu Diễn (&Lscr;<sub>feat</sub>)</label>
+            <select class="side-control" id="distill-loss-select">
+              <option value="cosine" selected>Cosine Similarity (&gamma;=0.8 Decay - Chuẩn)</option>
+              <option value="contrastive">Contrastive InfoNCE</option>
+              <option value="smooth_l1">Smooth L1 / Huber</option>
+              <option value="l1">L1 Absolute</option>
+              <option value="mse">MSE Euclidean</option>
+            </select>
+          </div>
+
+          <!-- Run Forecast CTA Button -->
+          <button class="primary-run-btn" id="btn-run-forecast">
+            <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
+            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <span class="btn-text" id="btn-text">Thực Thi Dự Báo CALF</span>
+          </button>
+          <span class="shortcut-hint">Phím tắt nhanh: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+        </div>
+      </section>
+
+      <!-- PILLAR 03: CALF EVALUATION & LATENT ALIGNMENT -->
+      <section class="algo-pillar-card">
+        <div class="pillar-header">
+          <span class="pillar-badge">03</span>
+          <div class="pillar-title-group">
+            <h3 class="pillar-title">Hiệu Năng & Căn Chỉnh Không Gian Ẩn</h3>
+            <span class="pillar-subtitle">Đo lường sai số & Độ tương đồng biểu diễn</span>
+          </div>
+        </div>
+
+        <div class="pillar-body">
+          <!-- 4-Card Focused Grid (Clean & Non-cluttered) -->
+          <div class="kpi-quad-grid">
+            
+            <!-- Card 1: MAPE -->
+            <div class="kpi-tile primary-tile">
+              <div class="tile-top">
+                <span class="tile-label">MAPE (Sai số %)</span>
+                <span class="tile-tag">Chính</span>
+              </div>
+              <div class="tile-value text-primary" id="val-mape">--</div>
+              <span class="tile-caption">Sai số phần trăm</span>
+            </div>
+
+            <!-- Card 2: Alignment -->
+            <div class="kpi-tile accent-tile">
+              <div class="tile-top">
+                <span class="tile-label">ViT Alignment</span>
+                <span class="tile-tag">Latent</span>
+              </div>
+              <div class="tile-value text-accent" id="val-alignment">--</div>
+              <span class="tile-caption">Tương đồng không gian ẩn</span>
+            </div>
+
+            <!-- Card 3: MDA -->
+            <div class="kpi-tile success-tile">
+              <div class="tile-top">
+                <span class="tile-label">MDA (Xu hướng)</span>
+                <span class="tile-tag">Direction</span>
+              </div>
+              <div class="tile-value text-success" id="val-mda">--</div>
+              <span class="tile-caption">Đúng chiều tăng/giảm</span>
+            </div>
+
+            <!-- Card 4: MAE / RMSE -->
+            <div class="kpi-tile">
+              <div class="tile-top">
+                <span class="tile-label">MAE / RMSE</span>
+                <span class="tile-tag">L1 / L2</span>
+              </div>
+              <div class="tile-value-combo">
+                <span id="val-mae">--</span>
+                <span class="tile-divider">/</span>
+                <span class="tile-subval" id="val-rmse">--</span>
+              </div>
+              <span class="tile-caption">Sai số tuyệt đối</span>
+            </div>
+
+          </div>
+
+          <!-- Mini Strip for Distill Loss and Latency -->
+          <div class="kpi-mini-strip">
+            <div class="mini-kpi-item">
+              <span class="mini-kpi-lbl">&Lscr;<sub>feat</sub> Distill:</span>
+              <strong class="mini-kpi-val" id="val-distill-loss">--</strong>
+              <span class="mini-kpi-tag" id="tag-distill-loss">COS</span>
+            </div>
+            <span class="mini-divider">&bull;</span>
+            <div class="mini-kpi-item">
+              <span class="mini-kpi-lbl">Độ trễ:</span>
+              <strong class="mini-kpi-val" id="val-latency">--</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </aside>
 
     <!-- RIGHT STAGE: MAIN VISUALIZER & MULTI-VIEW STAGE (Full Viewport Height) -->
     <section class="stage-pane" id="stage-pane">
       
-      <!-- STAGE TOP BAR: TABS SWITCHER + CONTROLS (Always on top of stage) -->
+      <!-- STAGE TOP BAR: TABS SWITCHER + CONTROLS -->
       <div class="stage-toolbar">
         <div class="stage-toolbar-left">
           <button class="expand-btn" id="btn-expand-sidebar" title="Mở rộng thanh điều khiển" style="display:none;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
 
-          <!-- STAGE VIEWS SWITCHER (Segmented control) -->
+          <!-- STAGE VIEWS SWITCHER (Numbered for clear algorithmic phases) -->
           <nav class="stage-nav-tabs">
             <button class="stage-tab active" data-view="view-chart" id="tab-btn-chart">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              <span>Forecast Visualizer</span>
+              <span class="tab-step-badge">1</span>
+              <span>Trực Quan Dự Báo (Visualizer)</span>
             </button>
             <button class="stage-tab" data-view="view-heatmap" id="tab-btn-heatmap">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
-              <span>Distillation Heatmap</span>
+              <span class="tab-step-badge">2</span>
+              <span>Căn Chỉnh Không Gian Ẩn (Heatmap)</span>
             </button>
             <button class="stage-tab" data-view="view-table" id="tab-btn-table">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-              <span>Step-by-Step Table</span>
+              <span class="tab-step-badge">3</span>
+              <span>Bảng Dự Báo Chi Tiết (Table)</span>
             </button>
             <button class="stage-tab" data-view="view-benchmarks" id="tab-btn-benchmarks">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-              <span>Multi-Horizons</span>
+              <span class="tab-step-badge">4</span>
+              <span>Đa Chân Trời (Multi-Horizons)</span>
             </button>
           </nav>
         </div>
@@ -271,39 +290,76 @@
         </div>
       </div>
 
+      <!-- CALF ALGORITHM PIPELINE FLOW BANNER (Prominent Algorithm Headers) -->
+      <div class="calf-pipeline-banner" id="calf-pipeline-banner">
+        <div class="pipeline-track">
+          <div class="track-step">
+            <span class="step-num">1</span>
+            <div class="step-meta">
+              <span class="step-title">RevIN & Patching</span>
+              <span class="step-sub">L=96 &bull; P=16, S=8</span>
+            </div>
+          </div>
+          <span class="track-arrow">&rarr;</span>
+          <div class="track-step">
+            <span class="step-num">2</span>
+            <div class="step-meta">
+              <span class="step-title" id="pipeline-teacher-name">DINO-V3 ViT Teacher</span>
+              <span class="step-sub">Bi-directional Attention</span>
+            </div>
+          </div>
+          <span class="track-arrow">&rarr;</span>
+          <div class="track-step">
+            <span class="step-num">3</span>
+            <div class="step-meta">
+              <span class="step-title">Tripartite Distill</span>
+              <span class="step-sub">&Lscr;<sub>task</sub> + &Lscr;<sub>logits</sub> + &Lscr;<sub>feat</sub></span>
+            </div>
+          </div>
+          <span class="track-arrow">&rarr;</span>
+          <div class="track-step highlight">
+            <span class="step-num">4</span>
+            <div class="step-meta">
+              <span class="step-title" id="pipeline-horizon-text">Dự Báo & Dải Tin Cậy</span>
+              <span class="step-sub">Horizon 96 &bull; &plusmn;1.96&sigma;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- LAYER TOGGLES & BACKTEST NOTICE RIBBON -->
       <div class="stage-subbar" id="chart-subbar">
         <div class="layer-toggles">
-          <label class="layer-toggle-label" title="Dữ liệu quan sát thực tế">
+          <label class="layer-toggle-chip" title="Dữ liệu quan sát thực tế">
             <input type="checkbox" id="toggle-ground-truth" checked>
-            <span class="toggle-dot dot-orange"></span>
+            <span class="chip-indicator dot-orange"></span>
             <span>Ground Truth</span>
           </label>
-          <label class="layer-toggle-label" title="Dự báo học sinh CALF sau chưng cất">
+          <label class="layer-toggle-chip" title="Dự báo học sinh CALF sau chưng cất">
             <input type="checkbox" id="toggle-calf" checked>
-            <span class="toggle-dot dot-blue"></span>
+            <span class="chip-indicator dot-blue"></span>
             <span>CALF Student</span>
           </label>
-          <label class="layer-toggle-label" title="Định hướng ngữ nghĩa vĩ mô từ giáo viên ViT">
+          <label class="layer-toggle-chip" title="Định hướng ngữ nghĩa vĩ mô từ giáo viên ViT">
             <input type="checkbox" id="toggle-teacher" checked>
-            <span class="toggle-dot dot-purple"></span>
+            <span class="chip-indicator dot-purple"></span>
             <span>Teacher ViT</span>
           </label>
-          <label class="layer-toggle-label" title="Mô hình Persistence lặp lại giá trị cuối lookback">
+          <label class="layer-toggle-chip" title="Mô hình Persistence lặp lại giá trị cuối lookback">
             <input type="checkbox" id="toggle-naive">
-            <span class="toggle-dot dot-naive"></span>
+            <span class="chip-indicator dot-naive"></span>
             <span>Naive Baseline</span>
           </label>
-          <label class="layer-toggle-label" title="Dải tin cậy xác suất 95%">
+          <label class="layer-toggle-chip" title="Dải tin cậy xác suất 95%">
             <input type="checkbox" id="toggle-confidence" checked>
-            <span class="toggle-dot dot-gray"></span>
+            <span class="chip-indicator dot-gray"></span>
             <span>95% CI Band</span>
           </label>
         </div>
 
         <div class="backtest-notice">
           <span class="notice-badge">Backtest</span>
-          <span class="notice-text">Đánh giá Out-of-Sample trên chuỗi lịch sử đã biết &bull; Dải tin cậy: <code>&ycirc; &plusmn; 1.96&sigma;<sub>res</sub></code></span>
+          <span class="notice-text">Out-of-Sample &bull; <code>&ycirc; &plusmn; 1.96&sigma;<sub>res</sub></code></span>
         </div>
       </div>
 
