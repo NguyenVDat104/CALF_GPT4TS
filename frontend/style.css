@@ -362,10 +362,10 @@ button, input, select {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -373,6 +373,21 @@ button, input, select {
 .algo-pillar-card:hover {
   border-color: rgba(99, 102, 241, 0.35);
   box-shadow: var(--shadow-sm);
+}
+
+.pillar-header-clean {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pillar-title-clean {
+  font-size: 0.80rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
 .pillar-header {
@@ -429,7 +444,7 @@ button, input, select {
 .pillar-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Form controls within pillars */
@@ -988,112 +1003,11 @@ details[open] .accordion-chevron {
 }
 
 /* ==========================================================================
-   CALF ALGORITHM PIPELINE BANNER (HIGH-LEVEL FLOW HEADERS)
-   ========================================================================== */
-
-.calf-pipeline-banner {
-  background-color: var(--bg-sidebar);
-  border-bottom: 1px solid var(--border-color);
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.pipeline-track {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 10px;
-}
-
-.track-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 11px;
-  border-radius: var(--radius-md);
-  background: var(--bg-body);
-  border: 1px solid var(--border-color);
-  flex: 1;
-  min-width: 0;
-  transition: var(--transition);
-}
-
-.track-step:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-}
-
-.track-step.highlight {
-  border-color: rgba(99, 102, 241, 0.45);
-  background: linear-gradient(135deg, var(--bg-body) 0%, rgba(99, 102, 241, 0.08) 100%);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15);
-}
-
-.step-num {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 1.5px solid var(--primary);
-  color: var(--primary);
-  font-size: 0.68rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.track-step.highlight .step-num {
-  background: var(--primary);
-  color: #ffffff;
-}
-
-.step-meta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.step-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.25;
-}
-
-.step-sub {
-  font-size: 0.66rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-}
-
-.step-sub sub {
-  font-size: 0.58rem;
-}
-
-.track-arrow {
-  color: var(--text-muted);
-  font-size: 0.88rem;
-  font-weight: 700;
-  opacity: 0.5;
-  flex-shrink: 0;
-}
-
-/* ==========================================================================
    STAGE SUBBAR & MODERN LAYER TOGGLE CHIPS
    ========================================================================== */
 
 .stage-subbar {
-  height: 42px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1113,11 +1027,11 @@ details[open] .accordion-chevron {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 11px;
+  padding: 3px 10px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
@@ -1147,8 +1061,8 @@ details[open] .accordion-chevron {
 }
 
 .chip-indicator {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
   transition: transform 0.2s ease;
@@ -1164,24 +1078,37 @@ details[open] .accordion-chevron {
 .dot-naive { background-color: var(--naive-color); }
 .dot-gray { background-color: rgba(37, 99, 235, 0.4); border: 1px dashed #2563eb; }
 
-.backtest-notice {
-  display: flex;
+/* Compact Pipeline Pill */
+.compact-pipeline-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
-}
-
-.notice-badge {
-  background: var(--primary);
-  color: #fff;
-  font-size: 0.67rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
-.notice-text {
+  gap: 6px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
   color: var(--text-secondary);
+}
+
+.compact-pipeline-pill .pill-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.compact-pipeline-pill .pill-label {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.70rem;
+}
+
+.compact-pipeline-pill .pill-track {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.72rem;
 }
 
 .notice-text code {

@@ -877,6 +877,13 @@ function setupEventListeners() {
         pipelineHorizon.textContent = `4. Đường Giá & Dải An Toàn (${len} nến)`;
       }
 
+      const compactTrack = document.getElementById('compact-pipeline-track');
+      if (compactTrack) {
+        const teacher = appState.backbone === 'dinov3' ? 'ViT DINO-V3' : 'GPT-2 LLM';
+        const hours = (len * 15) / 60;
+        compactTrack.innerHTML = `${teacher} &rarr; GPT-2 (${hours}h / ${len} nến)`;
+      }
+
       triggerForecast();
     });
   });
@@ -897,6 +904,13 @@ function setupEventListeners() {
         if (headerBadge) headerBadge.textContent = 'GPT-2 Causal LLM';
         if (encoderLbl) encoderLbl.textContent = 'Word Embedding Alignment';
         if (pipelineTeacher) pipelineTeacher.textContent = '2. AI Ngôn Ngữ (GPT-2 LLM)';
+      }
+
+      const compactTrack = document.getElementById('compact-pipeline-track');
+      if (compactTrack) {
+        const teacher = e.target.value === 'dinov3' ? 'ViT DINO-V3' : 'GPT-2 LLM';
+        const hours = (appState.predLen * 15) / 60;
+        compactTrack.innerHTML = `${teacher} &rarr; GPT-2 (${hours}h / ${appState.predLen} nến)`;
       }
 
       triggerForecast();
