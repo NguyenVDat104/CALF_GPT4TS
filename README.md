@@ -102,35 +102,39 @@ The complete system routes historical raw series through normalization, dual-str
 </p>
 
 ```mermaid
-flowchart TD
-    subgraph Input_Stage ["1. Input Conditioning"]
-        X["Raw Multivariate Series: X in R^{B x L x M}"] --> RevIN["Reversible Instance Normalization (RevIN)"]
-        RevIN --> X_norm["Normalized Series: X_norm"]
-        X_norm --> PatchTok["1D Patch Tokenizer: Linear(P -> d_model)"]
+flowchart LR
+    subgraph Stage1 ["1. Input Conditioning"]
+        direction TB
+        A["Raw Time Series<br/>(BTCUSDT, ETTh1, Weather)"] --> B["RevIN Normalization<br/>& Patch Tokenizer (P=16, S=8)"]
     end
 
-    subgraph Teacher_Stream ["2. Teacher Stream (Vision AI Eye)"]
-        PatchTok --> ViT_Teacher["DINO-V3 ViT Backbone<br/>(QK-Norm + LayerScale + Bidirectional Attention)"]
-        ViT_Teacher --> H_teacher["Teacher Hidden States: {h_teacher^(l)}"]
-        ViT_Teacher --> Y_teacher["Teacher Forecast Head: y_teacher"]
+    subgraph Stage2 ["2. Teacher & Student Backbones"]
+        direction TB
+        TEACHER["ViT Teacher: DINO-V3<br/>(Bidirectional 2D Attention<br/>+ QK-Norm & LayerScale)"]
+        STUDENT["LLM Student: LoRA GPT-2<br/>(Causal Temporal Reasoning<br/>+ PCA Word Embeddings)"]
     end
 
-    subgraph Student_Stream ["3. Student Stream (Sequence Reasoning)"]
-        PatchTok --> CrossAttn["Cross-Modal Semantic Alignment<br/>(Query: Time Patches | Key/Value: PCA Word Embeddings)"]
-        CrossAttn --> GPT_Student["Student LLM Backbone (LoRA GPT-2)<br/>(Causal Temporal Reasoning)"]
-        GPT_Student --> H_time["Student Hidden States: {h_time^(l)}"]
-        GPT_Student --> Y_time["Student Forecast Head: y_time"]
+    subgraph Stage3 ["3. Distillation Engine"]
+        direction TB
+        FEAT_LOSS["Multi-Layer Feature Distillation<br/>(Cosine / InfoNCE, Decay γ=0.8)"]
+        LOGIT_LOSS["Output Trajectory Alignment<br/>(Smooth L1 / KL Divergence)"]
     end
 
-    subgraph Distillation_Engine ["4. Distillation Engine"]
-        H_teacher -. "Layer-decayed Feature Distillation (Cosine / InfoNCE)" .-> H_time
-        Y_teacher -. "Logits Trajectory Alignment (Smooth L1 / KL)" .-> Y_time
+    subgraph Stage4 ["4. Forecast Output"]
+        direction TB
+        OUT["RevIN Denormalization<br/>(Restore Mean & Stdev)"] --> FORECAST["Final Forecast Horizon (Y_hat)<br/>+ 95% Confidence Band"]
     end
 
-    subgraph Forecast_Stage ["5. Output Stage"]
-        Y_time --> DeRevIN["RevIN Denormalization: y_final = y_time * stdev + means"]
-        DeRevIN --> Out["Final Prediction Y_hat in R^{B x H x M} + 95% Confidence Band"]
-    end
+    B --> TEACHER
+    B --> STUDENT
+
+    TEACHER -. "Teacher States h_teacher" .-> FEAT_LOSS
+    STUDENT -. "Student States h_time" .-> FEAT_LOSS
+
+    TEACHER -. "Teacher Logits y_teacher" .-> LOGIT_LOSS
+    STUDENT -. "Student Logits y_time" .-> LOGIT_LOSS
+
+    STUDENT --> OUT
 ```
 
 ---
