@@ -68,7 +68,7 @@ pinned: false
 ### 1.1 Why Cross-Modal Distillation? The Limits of 1D Text LLMs
 Multivariate time series forecasting plays a mission-critical role in algorithmic trading, power grid load balancing, traffic routing, and climate forecasting. In recent years, researchers attempted to transfer Large Language Models (LLMs) such as GPT-2 to time series (e.g., GPT4TS). However, pure autoregressive language models suffer from two structural handicaps:
 
-1. **Unidirectional Causal Attention Masking:** GPT-2 strictly enforces lower-triangular causal masking where token $t$ can only attend to tokens $\le t$. While this is suitable for next-word text generation, time series patterns (such as double tops, head-and-shoulders, and trend reversions) are inherently **bilateral geometric structures** that require bidirectional contextual awareness across past and surrounding patches.
+1. **Unidirectional Causal Attention Masking:** GPT-2 strictly enforces lower-triangular causal masking where token `t` can only attend to tokens `≤ t`. While this is suitable for next-word text generation, time series patterns (such as double tops, head-and-shoulders, and trend reversions) are inherently **bilateral geometric structures** that require bidirectional contextual awareness across past and surrounding patches.
 2. **Discrete Vocabulary Bottleneck:** Text LLMs operate on discrete token embeddings trained on discrete vocabulary distributions. Continuous financial and sensory time series values reside in high-dimensional continuous metric spaces, causing severe representation mismatch when mapped naively into language tokens.
 
 <p align="center">
@@ -79,15 +79,15 @@ Multivariate time series forecasting plays a mission-critical role in algorithmi
 To resolve these bottlenecks, this project integrates **Meta's DINO-V3 Vision Transformer (ViT)** foundation model into the **Cross-Modal Alignment and Distillation (CALF)** framework:
 
 - **Teacher-Student Multimodal Fusion:** DINO-V3 acts as a high-capacity visual "AI Eye" (Teacher) with full **bidirectional 2D spatial attention**, transferring global geometric shape representations into **GPT-2** (Student) sequence reasoning.
-- **QK-Normalization (`DINOv3Attention`):** Normalizes Query ($Q$) and Key ($K$) vectors before dot-product scaling to completely eliminate attention logit blowup and stabilize gradient propagation across deep networks.
-- **LayerScale Residual Stabilization (`DINOv3LayerScale`):** Employs learnable per-channel diagonal multipliers ($\gamma = 10^{-5}$) on transformer layer outputs, preventing residual signal explosion during cross-modal transfer.
+- **QK-Normalization (`DINOv3Attention`):** Normalizes Query (`Q`) and Key (`K`) vectors before dot-product scaling to completely eliminate attention logit blowup and stabilize gradient propagation across deep networks.
+- **LayerScale Residual Stabilization (`DINOv3LayerScale`):** Employs learnable per-channel diagonal multipliers (`γ = 1e-5`) on transformer layer outputs, preventing residual signal explosion during cross-modal transfer.
 - **Graceful Fallback Adapter (`DINOv3Backbone`):** Dynamically attempts to stream pretrained weights from Hugging Face Hub (`facebook/dinov3-*` or `facebook/dinov2-*`). In air-gapped, offline, firewalled, or edge CPU environments, it automatically falls back to `CustomDINOv3ViT` with zero interruption.
-- **Tripartite Distillation Loss Suite (`utils/distillationLoss.py`):** Combines Supervised Task Loss ($\mathcal{L}_{\text{task}}$), Output Trajectory Alignment ($\mathcal{L}_{\text{logits}}$), and Multi-Layer Intermediate Representation Distillation ($\mathcal{L}_{\text{feat}}$) with exponential depth decay ($\gamma = 0.8$).
+- **Tripartite Distillation Loss Suite (`utils/distillationLoss.py`):** Combines Supervised Task Loss (`L_task`), Output Trajectory Alignment (`L_logits`), and Multi-Layer Intermediate Representation Distillation (`L_feat`) with exponential depth decay (`γ = 0.8`).
 
 ### 1.3 Core Performance Highlights
 - **+14.8% Improvement** over vanilla GPT-2 baselines on complex volatile sequences.
 - **99.85% Accuracy (0.15% MAPE)** and **94.74% Directional Accuracy (MDA)** on Bitcoin (BTC/USDT 15m) out-of-sample backtesting.
-- **131.41 USDT MAE** deviation on Bitcoin price ~$67,000 USDT (< 0.20% absolute margin of error).
+- **131.41 USDT MAE** deviation on Bitcoin price ~67,000 USDT (< 0.20% absolute margin of error).
 - **24/7 Production Deployment** on Render Cloud with an interactive TradingView-style dark glassmorphism dashboard.
 
 ---
@@ -157,7 +157,7 @@ X_{\text{norm}} = \frac{X - \mu}{\sigma} \cdot \gamma_{\text{revin}} + \beta_{\t
 $$
 
 3. **Denormalization Step (After Model Prediction):**
-Following prediction $\hat{Y}_{\text{norm}} \in \mathbb{R}^{B \times H \times M}$ across future horizon $H$, the original statistical scale is restored:
+Following prediction `Y_norm ∈ R^{B x H x M}` across future horizon `H`, the original statistical scale is restored:
 
 $$
 \hat{Y} = \left(\frac{\hat{Y}_{\text{norm}} - \beta_{\text{revin}}}{\gamma_{\text{revin}}}\right) \cdot \sigma + \mu
@@ -169,15 +169,15 @@ This ensures that the neural network learns scale-invariant dynamics, while the 
 
 ### 2.3 Step 2: Continuous Patch Tokenization
 To preserve local temporal dependencies and reduce transformer sequence length, continuous values are grouped into patches:
-- Patch length: $P$ (default: 16)
-- Stride: $S$ (default: 8)
+- Patch length: `P` (default: 16)
+- Stride: `S` (default: 8)
 - Number of patches:
 
 $$
 N = \left\lfloor \frac{L - P}{S} \right\rfloor + 2
 $$
 
-Each continuous patch $p_i \in \mathbb{R}^{P}$ is projected into the model latent dimension $d_{\text{model}} = 768$ via a learnable linear layer:
+Each continuous patch `p_i ∈ R^P` is projected into the model latent dimension `d_model = 768` via a learnable linear layer:
 
 $$
 x_i = p_i W_{\text{patch}} + b_{\text{patch}}, \quad W_{\text{patch}} \in \mathbb{R}^{P \times d_{\text{model}}}
@@ -186,13 +186,13 @@ $$
 ---
 
 ### 2.4 Step 3: Word Token Embedding (WTE) Anchors via PCA
-In `models/GPT4TS.py`, GPT-2's discrete vocabulary embedding matrix $W_{\text{vocab}} \in \mathbb{R}^{50257 \times 768}$ is compressed via Principal Component Analysis (PCA) to produce 500 semantic anchor vectors:
+In `models/GPT4TS.py`, GPT-2's discrete vocabulary embedding matrix `W_vocab ∈ R^{50257 x 768}` is compressed via Principal Component Analysis (PCA) to produce 500 semantic anchor vectors:
 
 $$
 W_{\text{te}} = \text{PCA}_{500}(W_{\text{vocab}}) \quad \in \mathbb{R}^{500 \times 768}
 $$
 
-These 500 anchor tokens (stored in `wte_pca_500.pt`) act as a fixed semantic coordinate bridge. The time-series patch representation $X_{\text{time}}$ queries this anchor dictionary using multi-head cross-attention:
+These 500 anchor tokens (stored in `wte_pca_500.pt`) act as a fixed semantic coordinate bridge. The time-series patch representation `X_time` queries this anchor dictionary using multi-head cross-attention:
 
 $$
 Q = X_{\text{time}} W_Q, \quad K = W_{\text{te}} W_K, \quad V = W_{\text{te}} W_V
@@ -202,7 +202,7 @@ $$
 X_{\text{cross}} = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
 $$
 
-This yields dual representations: $X_{\text{time}}$ (temporal feature manifold) and $X_{\text{text}}$ (semantic cross-modal manifold).
+This yields dual representations: `X_time` (temporal feature manifold) and `X_text` (semantic cross-modal manifold).
 
 ---
 
@@ -217,7 +217,7 @@ $$
 $$
 
 #### 2. LayerScale Residual Stabilization (`DINOv3LayerScale`)
-Deep vision transformers suffer from residual accumulation. LayerScale initializes learnable diagonal parameters $\gamma_1, \gamma_2 \in \mathbb{R}^{d_{\text{model}}}$ set to a tiny constant $10^{-5}$:
+Deep vision transformers suffer from residual accumulation. LayerScale initializes learnable diagonal parameters `γ_1`, `γ_2` set to a tiny constant `1e-5`:
 
 $$
 x_{l}' = x_l + \text{diag}(\gamma_1) \cdot \text{Attention}(\text{LN}(x_l))
@@ -237,14 +237,14 @@ When initialized, `DINOv3Backbone` checks connectivity:
 
 ### 2.6 Step 5: Parameter-Efficient Student Temporal Reasoning (LoRA GPT-2)
 To prevent catastrophic forgetting of pretrained sequence reasoning, the majority of GPT-2 weights are frozen:
-- Positional encodings ($W_{\text{wpe}}$) and Layer Normalization parameters ($\gamma, \beta$) remain trainable.
-- Attention projection weights $W \in \mathbb{R}^{d \times k}$ are adapted via Low-Rank Adaptation (LoRA):
+- Positional encodings (`W_wpe`) and Layer Normalization parameters (`γ`, `β`) remain trainable.
+- Attention projection weights `W` are adapted via Low-Rank Adaptation (LoRA):
 
 $$
 W_{\text{adapted}} = W_{\text{frozen}} + \frac{\alpha}{r} (B \cdot A)
 $$
 
-Where $A \in \mathbb{R}^{r \times k}$ is Gaussian initialized, $B \in \mathbb{R}^{d \times r}$ is zero initialized, rank $r = 8$, and scaling $\alpha = 32$.
+Where `A` is Gaussian initialized, `B` is zero initialized, rank `r = 8`, and scaling `α = 32`.
 
 ---
 
@@ -262,26 +262,26 @@ $$
 $$
 
 Default empirical weight hyperparameters:
-- Task Supervised Weight: $w_{\text{task}} = 1.0$
-- Output Logits Weight: $w_{\text{logits}} = 1.0$
-- Intermediate Feature Weight: $w_{\text{feat}} = 0.01 \sim 0.02$
+- Task Supervised Weight: `w_task = 1.0`
+- Output Logits Weight: `w_logits = 1.0`
+- Intermediate Feature Weight: `w_feat = 0.01 ~ 0.02`
 
 ---
 
 ### 3.2 Exponential Layer-Wise Depth Decay Schedule
-Intermediate hidden representations are extracted from all $L$ layers: student states $h_{\text{time}}^{(l)}$ and teacher states $h_{\text{teacher}}^{(l)}$. Because deeper transformer layers encode task-specific high-level semantics while shallow layers capture general primitives, an **exponential depth decay factor** ($\gamma_{\text{decay}} = 0.8$) prioritizes deep layer alignment:
+Intermediate hidden representations are extracted from all `L` layers: student states `h_time` and teacher states `h_teacher`. Because deeper transformer layers encode task-specific high-level semantics while shallow layers capture general primitives, an **exponential depth decay factor** (`γ = 0.8`) prioritizes deep layer alignment:
 
 $$
 \mathcal{L}_{\text{feat}} = \sum_{l=1}^{L} \gamma_{\text{decay}}^{L-l} \cdot \mathcal{D}\left(h_{\text{time}}^{(l)}, h_{\text{teacher}}^{(l)}\right)
 $$
 
-Layer weighting example for a 6-layer backbone ($L=6$):
-- Layer 6 (Output): Weight $= 0.8^0 = 1.000$ (100% full supervision)
-- Layer 5: Weight $= 0.8^1 = 0.800$
-- Layer 4: Weight $= 0.8^2 = 0.640$
-- Layer 3: Weight $= 0.8^3 = 0.512$
-- Layer 2: Weight $= 0.8^4 = 0.409$
-- Layer 1 (Input): Weight $= 0.8^5 = 0.327$
+Layer weighting example for a 6-layer backbone (`L = 6`):
+- Layer 6 (Output): Weight `= 0.8⁰ = 1.000` (100% full supervision)
+- Layer 5: Weight `= 0.8¹ = 0.800`
+- Layer 4: Weight `= 0.8² = 0.640`
+- Layer 3: Weight `= 0.8³ = 0.512`
+- Layer 2: Weight `= 0.8⁴ = 0.409`
+- Layer 1 (Input): Weight `= 0.8⁵ = 0.327`
 
 ---
 
@@ -291,21 +291,21 @@ Selected via the CLI argument `--distill_loss`:
 | Distillation Metric | Flag (`--distill_loss`) | Exact Mathematical Formulation | Characteristic & Best Use Case |
 | :--- | :--- | :--- | :--- |
 | **Cosine Distance** | `cosine` *(Recommended)* | `1 − (u · v) / [norm(u) · norm(v)]` | **Hypersphere Directional Alignment:** Enforces directional angle alignment invariant to magnitude drifts. Best for ViT embeddings. |
-| **Contrastive InfoNCE** | `contrastive` | `-log [ exp(sim(z_i, z_i⁺)/τ) / Σ_j exp(sim(z_i, z_j)/τ) ]` | **Cross-Modal Disentanglement:** Pushes dissimilar temporal patches apart while pulling aligned visual features close ($\tau = 0.07$). |
-| **Huber / Smooth L1** | `smooth_l1` / `huber` | `0.5(u − v)² if abs(u − v) < δ; else δ·abs(u − v) − 0.5δ²` | **Outlier Robustness:** Quadratic near convergence ($\delta = 1.0$), linear penalty for extreme macroeconomic price spikes. |
+| **Contrastive InfoNCE** | `contrastive` | `-log [ exp(sim(z_i, z_i⁺)/τ) / Σ_j exp(sim(z_i, z_j)/τ) ]` | **Cross-Modal Disentanglement:** Pushes dissimilar temporal patches apart while pulling aligned visual features close (τ = 0.07). |
+| **Huber / Smooth L1** | `smooth_l1` / `huber` | `0.5(u − v)² if abs(u − v) < δ; else δ·abs(u − v) − 0.5δ²` | **Outlier Robustness:** Quadratic near convergence (δ = 1.0), linear penalty for extreme macroeconomic price spikes. |
 | **Manhattan L1** | `l1` *(Original)* | `(1 / D) · Σ abs(u_d − v_d)` | Standard Mean Absolute Error distance across latent feature dimensions. |
 | **Mean Squared Error** | `mse` | `(1 / D) · Σ (u_d − v_d)²` | Strong quadratic penalty for large representation drifts. |
-| **KL Divergence** | `kl_div` | `Σ P(u/T) · log[ P(u/T) / Q(v/T) ] · T²` | Matches soft continuous probability distributions across projections ($T = 2.0$). |
+| **KL Divergence** | `kl_div` | `Σ P(u/T) · log[ P(u/T) / Q(v/T) ] · T²` | Matches soft continuous probability distributions across projections (T = 2.0). |
 | **Cross-Entropy** | `ce` | `- Σ y_c · log(p_c)` | Supervised multi-class classification alignment. |
 
 ---
 
 ### 3.4 Supervised Task Objectives
 Selected via `--task_loss`:
-- **L1 Loss (MAE):** $\frac{1}{N} \sum |y - \hat{y}|$
-- **MSE Loss:** $\frac{1}{N} \sum (y - \hat{y})^2$
-- **MAPE (Mean Absolute Percentage Error):** $\frac{100\%}{N} \sum \left| \frac{y - \hat{y}}{y + \epsilon} \right|$
-- **SMAPE (Symmetric MAPE):** $\frac{100\%}{N} \sum \frac{2 |y - \hat{y}|}{|y| + |\hat{y}| + \epsilon}$
+- **L1 Loss (MAE):** `(1 / N) · Σ |y - y_hat|` — Mean Absolute Error.
+- **MSE Loss:** `(1 / N) · Σ (y - y_hat)²` — Mean Squared Error.
+- **MAPE (Mean Absolute Percentage Error):** `(100% / N) · Σ |(y - y_hat) / (y + ε)|` — Relative percentage deviation.
+- **SMAPE (Symmetric MAPE):** `(100% / N) · Σ [2 |y - y_hat| / (|y| + |y_hat| + ε)]` — Symmetric percentage scale.
 - **MASE (Mean Absolute Scaled Error):** Evaluates forecast error scaled by naive in-sample persistence error.
 
 ---
@@ -336,7 +336,7 @@ Evaluated across prediction horizons $H \in \{96, 192, 336, 720\}$ with input lo
 Evaluated on out-of-sample unseen Bitcoin trading market regimes ([Kaggle Dataset](https://www.kaggle.com/datasets/iamdatpeo/btcusdt-15m-time-series-calf-dataset)):
 - **AI Prediction Accuracy (1 - MAPE):** `99.85%` (Mean Absolute Percentage Error = `0.15%`).
 - **Mean Directional Accuracy (MDA):** `94.74%` success rate in predicting up/down trend regime inflection.
-- **Mean Absolute Error (MAE):** `131.41 USDT` on ~$67,000 spot price level.
+- **Mean Absolute Error (MAE):** `131.41 USDT` on ~67,000 USDT spot price level.
 - **Root Mean Squared Error (RMSE):** `184.26 USDT`.
 
 ---
@@ -351,10 +351,10 @@ Evaluated on out-of-sample unseen Bitcoin trading market regimes ([Kaggle Datase
 | Huber / Smooth L1 | 0.354 | 0.383 | High outlier robustness |
 | Manhattan L1 (Original CALF) | 0.368 | 0.391 | Susceptible to magnitude scale mismatches |
 | Mean Squared Error (MSE) | 0.372 | 0.396 | Over-penalizes noise spikes |
-| No Distillation ($w_{\text{feat}} = 0$) | 0.389 | 0.408 | Severe representation collapse |
+| No Distillation (`w_feat = 0`) | 0.389 | 0.408 | Severe representation collapse |
 
 #### 2. Ablation on Architectural Enhancements
-- **Without QK-Norm:** Attention logits blow up when fine-tuning deep ViT layers; gradient norm spikes $> 50.0$.
+- **Without QK-Norm:** Attention logits blow up when fine-tuning deep ViT layers; gradient norm spikes > 50.0.
 - **Without LayerScale:** Gradient vanishing observed in initial 3 epochs; loss convergence delayed by 18 epochs.
 - **Without RevIN:** MSE degrades by **+38.4%** under non-stationary price trends.
 
@@ -400,9 +400,9 @@ Every hyperparameter and execution flag in `run.py` is documented below:
 ### 3. Forecasting Horizon & Sequence Dimensions
 | Parameter | Type | Default | Recommended | Description |
 | :--- | :---: | :---: | :---: | :--- |
-| `--seq_len` | `int` | `96` | `96`, `192`, `336` | Historical input lookback sequence length ($L$). |
+| `--seq_len` | `int` | `96` | `96`, `192`, `336` | Historical input lookback sequence length (`L`). |
 | `--label_len` | `int` | `48` | `48` or `0` | Start token length for autoregressive decoders. |
-| `--pred_len` | `int` | `96` | `96`, `192`, `336`, `720` | Future forecast horizon length ($H$). |
+| `--pred_len` | `int` | `96` | `96`, `192`, `336`, `720` | Future forecast horizon length (`H`). |
 | `--inverse` | `flag` | `False` | `--inverse` | Inverse denormalizes target data if enabled. |
 
 ### 4. DINO-V3 Vision Backbone & Encoder Settings
@@ -417,19 +417,19 @@ Every hyperparameter and execution flag in `run.py` is documented below:
 ### 5. Distillation Loss & Objective Weight Configuration
 | Parameter | Type | Default | Choices | Description |
 | :--- | :---: | :---: | :--- | :--- |
-| `--distill_loss` | `str` | `l1` | `cosine`, `contrastive`, `smooth_l1`, `huber`, `mse`, `kl_div` | Loss metric for intermediate multi-layer feature alignment ($\mathcal{L}_{\text{feat}}$). |
-| `--logits_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `cosine`, `kl_div` | Loss metric for output logits alignment ($\mathcal{L}_{\text{logits}}$). |
-| `--task_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `mape`, `smape`, `mase` | Supervised ground truth regression objective ($\mathcal{L}_{\text{task}}$). |
-| `--task_w` | `float` | `1.0` | `1.0` | Weight multiplier for $\mathcal{L}_{\text{task}}$. |
-| `--logits_w` | `float` | `1.0` | `1.0` | Weight multiplier for $\mathcal{L}_{\text{logits}}$. |
-| `--feature_w` | `float` | `0.01` | `0.005 ~ 0.05` | Weight multiplier for $\mathcal{L}_{\text{feat}}$ ($0.02$ recommended for DINO-V3). |
+| `--distill_loss` | `str` | `l1` | `cosine`, `contrastive`, `smooth_l1`, `huber`, `mse`, `kl_div` | Loss metric for intermediate multi-layer feature alignment (`L_feat`). |
+| `--logits_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `cosine`, `kl_div` | Loss metric for output logits alignment (`L_logits`). |
+| `--task_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `mape`, `smape`, `mase` | Supervised ground truth regression objective (`L_task`). |
+| `--task_w` | `float` | `1.0` | `1.0` | Weight multiplier for `L_task`. |
+| `--logits_w` | `float` | `1.0` | `1.0` | Weight multiplier for `L_logits`. |
+| `--feature_w` | `float` | `0.01` | `0.005 ~ 0.05` | Weight multiplier for `L_feat` (`0.02` recommended for DINO-V3). |
 | `--word_embedding_path` | `str` | `wte_pca_500.pt` | Path string | Precomputed PCA Word Token Embedding coordinate anchors. |
 
 ### 6. LoRA & Optimization Hyperparameters
 | Parameter | Type | Default | Values | Description |
 | :--- | :---: | :---: | :--- | :--- |
 | `--r` | `int` | `8` | `4`, `8`, `16` | LoRA rank dimension. |
-| `--lora_alpha` | `int` | `32` | `16`, `32`, `64` | LoRA scaling factor $\alpha$. |
+| `--lora_alpha` | `int` | `32` | `16`, `32`, `64` | LoRA scaling factor `α`. |
 | `--lora_dropout` | `float` | `0.1` | `0.0 ~ 0.2` | Dropout probability for LoRA layers. |
 | `--train_epochs` | `int` | `10` | `10 ~ 50` | Maximum number of training epochs. |
 | `--batch_size` | `int` | `32` | `32`, `64`, `128`, `256` | Training batch size. |
@@ -528,7 +528,7 @@ python run.py \
 ```
 
 #### Mode 3: Automated Multi-Horizon Benchmark Script
-To reproduce full benchmarks across all horizons $H \in \{96, 192, 336, 720\}$ in one step:
+To reproduce full benchmarks across all horizons `H ∈ {96, 192, 336, 720}` in one step:
 ```bash
 bash scripts/long_term_forecasting/ETTh_DINOv3.sh
 ```
@@ -640,7 +640,7 @@ The backend is powered by **FastAPI + Uvicorn** (`server.py`):
 
 #### 4. Multi-Horizon Benchmarks
 - **Endpoint:** `GET /api/benchmarks`
-- **Description:** Returns comparative metrics across $H \in \{96, 192, 336, 720\}$ for real-time visualization.
+- **Description:** Returns comparative metrics across horizons `H ∈ {96, 192, 336, 720}` for real-time visualization.
 
 ---
 
@@ -670,7 +670,7 @@ The backend is powered by **FastAPI + Uvicorn** (`server.py`):
 - Render's free tier spins down idle instances after 15 minutes of inactivity. On the first incoming HTTP request, the container cold-starts. Our frontend includes an automated retry loop with animated visual progress indicators.
 
 ### Q4: How are NaN gradients prevented in deep ViT backbones?
-- Standard transformers without QK-Norm suffer from logit saturation when sequence representations diverge. CALF enforces `DINOv3Attention` QK-Normalization and `DINOv3LayerScale` residual multipliers ($\gamma = 10^{-5}$), guaranteeing bounded gradients throughout training.
+- Standard transformers without QK-Norm suffer from logit saturation when sequence representations diverge. CALF enforces `DINOv3Attention` QK-Normalization and `DINOv3LayerScale` residual multipliers (`γ = 1e-5`), guaranteeing bounded gradients throughout training.
 
 ---
 
