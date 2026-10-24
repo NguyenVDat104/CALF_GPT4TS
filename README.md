@@ -51,7 +51,7 @@ Multivariate time series forecasting in financial markets, smart grids, traffic 
 2. **Structural Limitations of Text-Only LLMs:** Prior LLM-for-Time-Series methods (such as GPT4TS) rely exclusively on autoregressive language models (GPT-2). However, GPT-2 imposes **unidirectional causal masking** (each token only attends to past tokens) and operates over discrete vocabulary distributions, making it ill-suited for continuous numerical manifolds and 2D candlestick chart patterns.
 3. **Our Solution (CALF + DINO-V3):**
    - We introduce **Meta's DINO-V3 Vision Transformer (ViT)** as a high-capacity visual "AI Eye" (Teacher) paired with **GPT-2** as the sequence reasoning "AI Brain" (Student).
-   - Through **Cross-modal Knowledge Distillation** with exponential layer decay ($\gamma = 0.8$) and Cosine hypersphere alignment, the model transfers global geometric visual representations into time-series forecasting, achieving a **+14.8% accuracy gain** over vanilla GPT-2.
+   - Through **Cross-modal Knowledge Distillation** with exponential layer decay (decay rate γ = 0.8) and Cosine hypersphere alignment, the model transfers global geometric visual representations into time-series forecasting, achieving a **+14.8% accuracy gain** over vanilla GPT-2.
 
 ```mermaid
 flowchart LR
@@ -71,7 +71,7 @@ The framework is engineered for cross-platform flexibility, operating seamlessly
 | :--- | :--- | :--- |
 | **Operating System** | Windows 10/11, Ubuntu 20.04/22.04 LTS, macOS (Apple Silicon / Intel) | Native support across all major OS platforms |
 | **Python** | Python `>= 3.9`, `<= 3.11` | Conda or virtualenv recommended |
-| **GPU Hardware** | NVIDIA CUDA 11.8 / 12.1+ (VRAM $\ge 4$GB: RTX 3060, T4, A100) | Hardware-accelerated training and benchmarking |
+| **GPU Hardware** | NVIDIA CUDA 11.8 / 12.1+ (VRAM ≥ 4 GB: RTX 3060, T4, A100) | Hardware-accelerated training and benchmarking |
 | **CPU Hardware** | Intel / AMD x86_64, Apple Silicon M1/M2/M3 | Automatic fallback to lightweight CPU inference |
 | **Docker** | Docker Engine 20.10+, Docker Compose | Production-ready via bundled `Dockerfile` |
 | **24/7 Cloud Demo** | **Render.com Cloud Web Service** | Fully hosted online demo requiring zero local installation |
@@ -186,14 +186,22 @@ classDiagram
 #### Core Components in `models/dinov3_arch.py`:
 * **QK-Normalization (`DINOv3Attention`):**
   Normalizes Query ($Q$) and Key ($K$) vectors prior to dot-product attention, eliminating attention logit blowup and stabilizing gradient dynamics:
-  $$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{\text{LN}(Q) \cdot \text{LN}(K)^T}{\sqrt{d_k}}\right) V$$
+
+  $$
+  \text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{\text{LN}(Q) \cdot \text{LN}(K)^T}{\sqrt{d_k}}\right) V
+  $$
+
 * **LayerScale Residual Stabilization (`DINOv3LayerScale`):**
-  Initializes diagonal per-channel scaling parameters $\gamma = 10^{-5}$ to ensure smooth gradient propagation in deep ViT backbones:
-  $$x_{l+1} = x_l + \text{diag}(\gamma_1) \cdot \text{Attention}(\text{LN}(x_l)) + \text{diag}(\gamma_2) \cdot \text{MLP}(\text{LN}(x_l'))$$
+  Initializes diagonal per-channel scaling parameters γ = 10⁻⁵ to ensure smooth gradient propagation in deep ViT backbones:
+
+  $$
+  x_{l+1} = x_l + \text{diag}(\gamma_1) \cdot \text{Attention}(\text{LN}(x_l)) + \text{diag}(\gamma_2) \cdot \text{MLP}(\text{LN}(x_l'))
+  $$
+
 * **Graceful Fallback Adapter (`DINOv3Backbone`):**
   Attempts to load pretrained weights from Hugging Face Hub (`facebook/dinov3-*` or `facebook/dinov2-*`). In offline, firewalled, or edge environments, it automatically falls back to `CustomDINOv3ViT` (pure PyTorch implementation) with zero runtime interruptions.
 * **Cross-Modal Patch Tokenizer (`Encoder_DINOv3`):**
-  Projects 1D time-series patches into the DINO feature dimension ($d_{\text{model}} = 768$), passes them through DINO-V3 blocks, and performs multi-head cross-attention against PCA word token embeddings (`wte_pca_500.pt`) to establish teacher-student semantic alignment.
+  Projects 1D time-series patches into the DINO feature dimension (d_model = 768), passes them through DINO-V3 blocks, and performs multi-head cross-attention against PCA word token embeddings (`wte_pca_500.pt`) to establish teacher-student semantic alignment.
 
 ---
 
@@ -201,33 +209,47 @@ classDiagram
 
 CALF trains the forecasting model via a composite **Tripartite Distillation Objective**:
 
-$$\mathcal{L}_{\text{total}} = w_{\text{task}} \cdot \mathcal{L}_{\text{task}} + w_{\text{logits}} \cdot \mathcal{L}_{\text{logits}} + w_{\text{feat}} \cdot \mathcal{L}_{\text{feat}}$$
+$$
+\mathcal{L}_{\text{total}} = w_{\text{task}} \cdot \mathcal{L}_{\text{task}} + w_{\text{logits}} \cdot \mathcal{L}_{\text{logits}} + w_{\text{feat}} \cdot \mathcal{L}_{\text{feat}}
+$$
 
-*(Default hyperparameters: $w_{\text{task}} = 1.0$, $w_{\text{logits}} = 1.0$, $w_{\text{feat}} = 0.01 \sim 0.02$)*
+> **Default Objective Weights:** `w_task = 1.0`, `w_logits = 1.0`, `w_feat = 0.01 ~ 0.02`
 
-#### 1. Multi-Layer Intermediate Feature Distillation ($\mathcal{L}_{\text{feat}}$)
-Rather than supervising only the final projection head, intermediate hidden representations of the student network ($h_{\text{time}}^{(l)}$) are aligned layer-by-layer with the teacher ViT representations ($h_{\text{teacher}}^{(l)}$) using an exponential depth decay factor ($\gamma = 0.8$):
+#### 1. Multi-Layer Intermediate Feature Distillation (L_feat)
+Rather than supervising only the final projection head, intermediate hidden representations of the student network ($h_{\text{time}}^{(l)}$) are aligned layer-by-layer with the teacher ViT representations ($h_{\text{teacher}}^{(l)}$) using an exponential depth decay factor (γ = 0.8):
 
-$$\mathcal{L}_{\text{feat}} = \sum_{l=1}^{L} \gamma^{L-l} \cdot \mathcal{D}\left(h_{\text{time}}^{(l)}, h_{\text{teacher}}^{(l)}\right)$$
+$$
+\mathcal{L}_{\text{feat}} = \sum_{l=1}^{L} \gamma^{L-l} \cdot \mathcal{D}\left(h_{\text{time}}^{(l)}, h_{\text{teacher}}^{(l)}\right)
+$$
 
 Suite of 7 distillation distance metrics supported via `--distill_loss`:
 
 | Distillation Metric (`--distill_loss`) | Mathematical Formulation | Optimal Application & Characteristics |
 | :--- | :--- | :--- |
-| **`cosine`** *(Recommended for DINO-V3)* | $\mathcal{D}_{\text{cos}}(u, v) = 1 - \frac{u \cdot v}{\|u\|_2 \|v\|_2}$ | **Hypersphere Directional Alignment:** Enforces semantic angle congruence while remaining invariant to feature norm scaling. Ideal for ViT embeddings. |
-| **`contrastive`** *(InfoNCE)* | $\mathcal{L}_{\text{NCE}} = -\log \frac{\exp(\text{sim}(z_i, z_i^+) / \tau)}{\sum_j \exp(\text{sim}(z_i, z_j) / \tau)}$ | **Cross-Modal Disentanglement:** Pulls aligned temporal-visual pairs together while pushing non-corresponding mini-batch samples apart ($\tau=0.07$). |
-| **`smooth_l1` / `huber`** | $\begin{cases} 0.5 (u - v)^2, & \|u - v\| < \delta \\ \delta \|u - v\| - 0.5 \delta^2, & \text{otherwise} \end{cases}$ | **Outlier Robustness:** Quadratic loss near convergence ($\delta=1.0$), linear penalty for extreme macroeconomic price spikes. |
-| **`l1`** *(Original)* | $\frac{1}{D} \sum \|u_d - v_d\|$ | Standard Manhattan feature distance across latent dimensions. |
-| **`mse`** | $\frac{1}{D} \sum (u_d - v_d)^2$ | Heavily penalizes large feature representation drifts. |
-| **`kl_div`** | $\sum P(u/T) \log \frac{P(u/T)}{Q(v/T)} \cdot T^2$ | Matches soft continuous probability distributions across projections ($T=2.0$). |
+| **`cosine`** *(Recommended for DINO-V3)* | `1 − (u · v) / (||u||₂ · ||v||₂)` | **Hypersphere Directional Alignment:** Enforces semantic angle congruence while remaining invariant to feature norm scaling. Ideal for ViT embeddings. |
+| **`contrastive`** *(InfoNCE)* | `-log [ exp(sim(z_i, z_i⁺)/τ) / Σ_j exp(sim(z_i, z_j)/τ) ]` | **Cross-Modal Disentanglement:** Pulls aligned temporal-visual pairs together while pushing non-corresponding mini-batch samples apart (τ = 0.07). |
+| **`smooth_l1` / `huber`** | `0.5(u − v)² if |u − v| < δ, else δ|u − v| − 0.5δ²` | **Outlier Robustness:** Quadratic loss near convergence (δ = 1.0), linear penalty for extreme macroeconomic price spikes. |
+| **`l1`** *(Original)* | `(1 / D) · Σ |u_d − v_d|` | Standard Manhattan feature distance across latent dimensions. |
+| **`mse`** | `(1 / D) · Σ (u_d − v_d)²` | Heavily penalizes large feature representation drifts. |
+| **`kl_div`** | `Σ P(u/T) · log[ P(u/T) / Q(v/T) ] · T²` | Matches soft continuous probability distributions across projections (T = 2.0). |
 
-#### 2. Output Logits Distillation ($\mathcal{L}_{\text{logits}}$)
+#### 2. Output Logits Distillation (L_logits)
 Synchronizes the trajectory generated by the student forecasting head ($y_{\text{time}}$) with the foundation teacher head ($y_{\text{teacher}}$):
-$$\mathcal{L}_{\text{logits}} = \ell_{\text{logits}}\left(y_{\text{time}}, y_{\text{teacher}}\right) \quad (\text{options: } \text{l1}, \text{mse}, \text{smooth\_l1}, \text{cosine}, \text{kl\_div})$$
 
-#### 3. Supervised Task Prediction Loss ($\mathcal{L}_{\text{task}}$)
+$$
+\mathcal{L}_{\text{logits}} = \ell_{\text{logits}}\left(y_{\text{time}}, y_{\text{teacher}}\right)
+$$
+
+*Supported options:* `l1`, `mse`, `smooth_l1`, `cosine`, `kl_div`.
+
+#### 3. Supervised Task Prediction Loss (L_task)
 Penalizes forecast discrepancies against future ground truth targets ($y_{\text{true}}$):
-$$\mathcal{L}_{\text{task}} = \ell_{\text{task}}\left(y_{\text{time}}, y_{\text{true}}\right) \quad (\text{options: } \text{l1 (MAE)}, \text{mse (MSE)}, \text{smooth\_l1}, \text{mape}, \text{smape}, \text{mase})$$
+
+$$
+\mathcal{L}_{\text{task}} = \ell_{\text{task}}\left(y_{\text{time}}, y_{\text{true}}\right)
+$$
+
+*Supported options:* `l1` (MAE), `mse` (MSE), `smooth_l1`, `mape`, `smape`, `mase`.
 
 ---
 
@@ -311,9 +333,9 @@ python run.py \
 | `--encoder` | `str` | `pca` | `pca`, `dinov3` | Time-series patch tokenizer and encoder |
 | `--dinov3_layers` | `int` | `6` | `2`, `4`, `6`, `12` | Number of Vision Transformer blocks to fine-tune |
 | `--dinov3_pretrained` | `int` | `1` | `1`, `0` | `1`: Load pretrained Hugging Face checkpoint (with fallback); `0`: Random init |
-| `--distill_loss` | `str` | `l1` | `cosine`, `contrastive`, `smooth_l1`, `mse`, `kl_div` | Loss metric for multi-layer intermediate feature distillation ($\mathcal{L}_{\text{feat}}$) |
-| `--task_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `mape`, `smape` | Supervised regression objective ($\mathcal{L}_{\text{task}}$) |
-| `--feature_w` | `float` | `0.01` | `0.001 ~ 0.1` | Weight multiplier for intermediate feature distillation ($w_{\text{feat}}$) |
+| `--distill_loss` | `str` | `l1` | `cosine`, `contrastive`, `smooth_l1`, `mse`, `kl_div` | Loss metric for multi-layer intermediate feature distillation (L_feat) |
+| `--task_loss` | `str` | `l1` | `l1`, `mse`, `smooth_l1`, `mape`, `smape` | Supervised regression objective (L_task) |
+| `--feature_w` | `float` | `0.01` | `0.001 ~ 0.1` | Weight multiplier for intermediate feature distillation (w_feat) |
 | `--seq_len` | `int` | `96` | `96, 192, 336` | Historical lookback window length |
 | `--pred_len` | `int` | `96` | `96, 192, 336, 720` | Future forecasting horizon length |
 
@@ -321,10 +343,10 @@ python run.py \
 
 ### 3.3 Active Model Versions & Checkpoints
 1. **Teacher Backbone (AI Eye):**
-   - **`facebook/dinov3-vitb16-pretrain-lvd1689m`**: 12-layer ViT-Base ($d_{\text{model}} = 768$, 8 attention heads).
+   - **`facebook/dinov3-vitb16-pretrain-lvd1689m`**: 12-layer ViT-Base (d_model = 768, 8 attention heads).
    - Graceful fallback to **`CustomDINOv3ViT`** (6-layer streamlined ViT with QK-Norm and LayerScale) for lightweight edge deployments.
 2. **Student Backbone (AI Brain):**
-   - **`GPT-2 (Small)`**: 6 causal self-attention layers ($d_{\text{model}} = 768$).
+   - **`GPT-2 (Small)`**: 6 causal self-attention layers (d_model = 768).
 3. **Cross-Modal Semantic Anchor:**
    - **`wte_pca_500.pt`**: Dimensionality-reduced PCA word token embeddings of GPT-2, acting as a fixed semantic coordinate bridge.
 
@@ -360,9 +382,9 @@ python run.py \
 ### 4.1 Empirical Evidence & Quantitative Benchmarks
 
 #### Comparative Benchmark Results (ETTh1 Dataset - Metric: MSE / MAE)
-Evaluated across standard forecasting horizons $H \in \{96, 192, 336, 720\}$ against baseline methods:
+Evaluated across standard forecasting horizons H ∈ {96, 192, 336, 720} against baseline methods:
 
-| Horizon ($H$) | Metric | PatchTST (SOTA Baseline) | CALF (Vanilla GPT-2) | **CALF + DINO-V3 (Ours)** | **Improvement (%)** |
+| Horizon (H) | Metric | PatchTST (SOTA Baseline) | CALF (Vanilla GPT-2) | **CALF + DINO-V3 (Ours)** | **Improvement (%)** |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | **96 steps (1 day)** | **MSE**<br>**MAE** | 0.375<br>0.399 | 0.368<br>0.391 | **0.342**<br>**0.373** | **+7.06%**<br>**+4.60%** |
 | **192 steps (2 days)** | **MSE**<br>**MAE** | 0.414<br>0.421 | 0.407<br>0.415 | **0.381**<br>**0.395** | **+6.38%**<br>**+4.81%** |
@@ -409,13 +431,13 @@ np.random.seed(fix_seed)
 To maintain rigorous scientific transparency, we document known architectural boundaries and their corresponding engineering mitigations:
 
 1. **GPU Memory Footprint in Deep ViTs:**
-   - *Limitation:* Fine-tuning all 12 layers of DINO-V3 with large batch sizes ($\ge 256$) requires $\ge 8$GB VRAM, potentially triggering Out-of-Memory errors on entry-level hardware.
+   - *Limitation:* Fine-tuning all 12 layers of DINO-V3 with large batch sizes (≥ 256) requires ≥ 8 GB VRAM, potentially triggering Out-of-Memory errors on entry-level hardware.
    - *Mitigation:* We provide `--dinov3_layers 6` with `--batch_size 32` and native support for `--use_amp` (Automatic Mixed Precision fp16).
 2. **Cloud Cold Starts (Free Tier Hosting):**
    - *Limitation:* The free Render cloud instance suspends inactive containers after 15 minutes, requiring 40–50 seconds to spin up on initial access.
    - *Mitigation:* The frontend client implements automated exponential retries and informative visual loading indicators.
-3. **Long-Horizon Uncertainty Expansion ($H = 720$):**
-   - *Limitation:* At extreme prediction horizons ($H \ge 720$), variance accumulation expands the 95% confidence band.
+3. **Long-Horizon Uncertainty Expansion (H = 720):**
+   - *Limitation:* At extreme prediction horizons (H ≥ 720), variance accumulation expands the 95% confidence band.
    - *Mitigation:* Reversible Instance Normalization (RevIN) normalizes non-stationary mean/variance drift at each step.
 
 ---
