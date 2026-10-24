@@ -41,3 +41,7 @@ Thumbs.db
 cloudflared.exe
 *.exe
 
+# Temporary scratch & figures
+scratch/
+notebooks/iframe_figures/
+

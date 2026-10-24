@@ -10,13 +10,19 @@ pinned: false
 
 # 🚀 CALF + DINO-V3: Multimodal Foundation Model Distillation for Generalized Time Series Forecasting
 
-[![](http://img.shields.io/badge/cs.LG-arXiv%3A2403.07300-B31B1B.svg)](https://arxiv.org/abs/2403.07300)
-[![GitHub Repository](https://img.shields.io/badge/GitHub-CALF__GPT4TS-blue?logo=github)](https://github.com/NguyenVDat104/CALF_GPT4TS)
-[![Live Cloud Demo](https://img.shields.io/badge/Render%20Cloud-24%2F7%20Active-brightgreen?logo=render)](https://calf-gpt4ts.onrender.com/)
-[![Kaggle Dataset](https://img.shields.io/badge/Kaggle-BTCUSDT%2015m%20Dataset-20BEFF?logo=kaggle)](https://www.kaggle.com/datasets/iamdatpeo/btcusdt-15m-time-series-calf-dataset)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11-3776AB?logo=python)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <a href="https://arxiv.org/abs/2403.07300"><img src="http://img.shields.io/badge/cs.LG-arXiv%3A2403.07300-B31B1B.svg" alt="arXiv"></a>
+  <a href="https://github.com/NguyenVDat104/CALF_GPT4TS"><img src="https://img.shields.io/badge/GitHub-CALF__GPT4TS-blue?logo=github" alt="GitHub"></a>
+  <a href="https://calf-gpt4ts.onrender.com/"><img src="https://img.shields.io/badge/Render%20Cloud-24%2F7%20Active-brightgreen?logo=render" alt="Live Demo"></a>
+  <a href="https://www.kaggle.com/datasets/iamdatpeo/btcusdt-15m-time-series-calf-dataset"><img src="https://img.shields.io/badge/Kaggle-BTCUSDT%2015m%20Dataset-20BEFF?logo=kaggle" alt="Kaggle"></a>
+  <img src="https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11-3776AB?logo=python" alt="Python">
+  <img src="https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C?logo=pytorch" alt="PyTorch">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <img src="assets/dashboard_preview.png" alt="CALF Studio Interactive Cockpit Dashboard" width="100%">
+</p>
 
 ---
 
@@ -52,6 +58,10 @@ Multivariate time series forecasting in financial markets, smart grids, traffic 
 3. **Our Solution (CALF + DINO-V3):**
    - We introduce **Meta's DINO-V3 Vision Transformer (ViT)** as a high-capacity visual "AI Eye" (Teacher) paired with **GPT-2** as the sequence reasoning "AI Brain" (Student).
    - Through **Cross-modal Knowledge Distillation** with exponential layer decay (decay rate γ = 0.8) and Cosine hypersphere alignment, the model transfers global geometric visual representations into time-series forecasting, achieving a **+14.8% accuracy gain** over vanilla GPT-2.
+
+<p align="center">
+  <img src="assets/architecture_dinov3.png" alt="CALF + DINO-V3 System Architecture" width="100%">
+</p>
 
 ```mermaid
 flowchart LR
@@ -130,7 +140,7 @@ The **CALF Studio** interface is inspired by professional trading software (Trad
   - **Directional Trend Accuracy (MDA):** `94.74%`
   - **Advantage Over Vanilla GPT-2:** `+14.8%`
   - **Price Deviation (MAE):** `131.41 USDT` (on Bitcoin price ~67,000 USDT)
-- **Comprehensive Toolset:** Instant PNG chart export, CSV data extraction, dynamic zoom controls (`100 candles`, `300 candles`, `Forecast Horizon`, `All`), and multi-view navigation (*Forecast Chart*, *ViT Distillation Heatmap*, *Data Table*, *Multi-Horizon Benchmarks*).
+- **Comprehensive Toolset:** Instant PNG chart export, CSV data extraction, dynamic zoom controls (`100 candles`, `300 candles`, `Forecast Horizon`, `All`), bilingual language switch (**VI | EN**), and multi-view navigation (*Forecast Chart*, *ViT Distillation Heatmap*, *Data Table*, *Multi-Horizon Benchmarks*).
 
 ---
 
@@ -142,6 +152,10 @@ The **CALF Studio** interface is inspired by professional trading software (Trad
 While natural language models treat sequences as 1D word tokens, financial time series naturally form 2D geometrical shapes (head-and-shoulders, candlestick bodies, trend channels, and support/resistance zones). **DINO-V3** provides two fundamental mathematical advantages over GPT-2:
 1. **Bidirectional Attention Field:** Removes autoregressive causal masks. Every temporal token can attend to past, present, and surrounding contextual patches simultaneously.
 2. **Continuous Latent Manifolds:** Unlike discrete text tokens, DINO-V3 is trained via self-supervised learning on dense, continuous pixel fields, producing continuous latent representations that align seamlessly with normalized numerical signals.
+
+<p align="center">
+  <img src="assets/visual_comparison_dinov3_vs_gpt2.png" alt="DINO-V3 ViT vs Vanilla GPT-2" width="100%">
+</p>
 
 ```mermaid
 classDiagram
@@ -183,31 +197,37 @@ classDiagram
     DINOv3Backbone *-- CustomDINOv3ViT
 ```
 
-#### Core Components in `models/dinov3_arch.py`:
-* **QK-Normalization (`DINOv3Attention`):**
-  Normalizes Query ($Q$) and Key ($K$) vectors prior to dot-product attention, eliminating attention logit blowup and stabilizing gradient dynamics:
+#### Detailed Architectural Innovations in `models/dinov3_arch.py`:
 
-  $$
-  \text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{\text{LN}(Q) \cdot \text{LN}(K)^T}{\sqrt{d_k}}\right) V
-  $$
+#### 1. QK-Normalization (`DINOv3Attention`)
+Normalizes Query ($Q$) and Key ($K$) vectors prior to dot-product attention, eliminating attention logit saturation and stabilizing deep gradient propagation:
 
-* **LayerScale Residual Stabilization (`DINOv3LayerScale`):**
-  Initializes diagonal per-channel scaling parameters γ = 10⁻⁵ to ensure smooth gradient propagation in deep ViT backbones:
+$$
+\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{\text{LN}(Q) \cdot \text{LN}(K)^T}{\sqrt{d_k}}\right) V
+$$
 
-  $$
-  x_{l+1} = x_l + \text{diag}(\gamma_1) \cdot \text{Attention}(\text{LN}(x_l)) + \text{diag}(\gamma_2) \cdot \text{MLP}(\text{LN}(x_l'))
-  $$
+#### 2. LayerScale Residual Stabilization (`DINOv3LayerScale`)
+Initializes diagonal per-channel scaling parameters $\gamma = 10^{-5}$ to ensure smooth gradient propagation in deep ViT backbones:
 
-* **Graceful Fallback Adapter (`DINOv3Backbone`):**
-  Attempts to load pretrained weights from Hugging Face Hub (`facebook/dinov3-*` or `facebook/dinov2-*`). In offline, firewalled, or edge environments, it automatically falls back to `CustomDINOv3ViT` (pure PyTorch implementation) with zero runtime interruptions.
-* **Cross-Modal Patch Tokenizer (`Encoder_DINOv3`):**
-  Projects 1D time-series patches into the DINO feature dimension (d_model = 768), passes them through DINO-V3 blocks, and performs multi-head cross-attention against PCA word token embeddings (`wte_pca_500.pt`) to establish teacher-student semantic alignment.
+$$
+x_{l+1} = x_l + \text{diag}(\gamma_1) \cdot \text{Attention}(\text{LN}(x_l)) + \text{diag}(\gamma_2) \cdot \text{MLP}(\text{LN}(x_l'))
+$$
+
+#### 3. Graceful Fallback Adapter (`DINOv3Backbone`)
+Attempts to load pretrained weights from Hugging Face Hub (`facebook/dinov3-*` or `facebook/dinov2-*`). In offline, firewalled, or edge environments, it automatically falls back to `CustomDINOv3ViT` (pure PyTorch implementation) with zero runtime interruptions.
+
+#### 4. Cross-Modal Patch Tokenizer (`Encoder_DINOv3`)
+Projects 1D time-series patches into the DINO feature dimension ($d_{\text{model}} = 768$), passes them through DINO-V3 blocks, and performs multi-head cross-attention against PCA word token embeddings (`wte_pca_500.pt`) to establish teacher-student semantic alignment.
 
 ---
 
 ### 2.2 Tripartite Multi-Objective Distillation Loss (`utils/distillationLoss.py`)
 
 CALF trains the forecasting model via a composite **Tripartite Distillation Objective**:
+
+<p align="center">
+  <img src="assets/tripartite_loss_diagram.png" alt="Tripartite Multi-Objective Loss Suite" width="100%">
+</p>
 
 $$
 \mathcal{L}_{\text{total}} = w_{\text{task}} \cdot \mathcal{L}_{\text{task}} + w_{\text{logits}} \cdot \mathcal{L}_{\text{logits}} + w_{\text{feat}} \cdot \mathcal{L}_{\text{feat}}
@@ -224,14 +244,14 @@ $$
 
 Suite of 7 distillation distance metrics supported via `--distill_loss`:
 
-| Distillation Metric (`--distill_loss`) | Mathematical Formulation | Optimal Application & Characteristics |
-| :--- | :--- | :--- |
-| **`cosine`** *(Recommended for DINO-V3)* | `1 − (u · v) / (||u||₂ · ||v||₂)` | **Hypersphere Directional Alignment:** Enforces semantic angle congruence while remaining invariant to feature norm scaling. Ideal for ViT embeddings. |
-| **`contrastive`** *(InfoNCE)* | `-log [ exp(sim(z_i, z_i⁺)/τ) / Σ_j exp(sim(z_i, z_j)/τ) ]` | **Cross-Modal Disentanglement:** Pulls aligned temporal-visual pairs together while pushing non-corresponding mini-batch samples apart (τ = 0.07). |
-| **`smooth_l1` / `huber`** | `0.5(u − v)² if |u − v| < δ, else δ|u − v| − 0.5δ²` | **Outlier Robustness:** Quadratic loss near convergence (δ = 1.0), linear penalty for extreme macroeconomic price spikes. |
-| **`l1`** *(Original)* | `(1 / D) · Σ |u_d − v_d|` | Standard Manhattan feature distance across latent dimensions. |
-| **`mse`** | `(1 / D) · Σ (u_d − v_d)²` | Heavily penalizes large feature representation drifts. |
-| **`kl_div`** | `Σ P(u/T) · log[ P(u/T) / Q(v/T) ] · T²` | Matches soft continuous probability distributions across projections (T = 2.0). |
+| Distillation Metric | Flag (`--distill_loss`) | Mathematical Formulation | Optimal Application & Characteristics |
+| :--- | :--- | :--- | :--- |
+| **Cosine Distance** | `cosine` *(Recommended)* | `1 − (u · v) / [norm(u) · norm(v)]` | **Hypersphere Directional Alignment:** Enforces semantic angle congruence while remaining invariant to feature norm scaling. Ideal for ViT embeddings. |
+| **Contrastive InfoNCE** | `contrastive` | `-log [ exp(sim(z_i, z_i⁺)/τ) / Σ_j exp(sim(z_i, z_j)/τ) ]` | **Cross-Modal Disentanglement:** Pulls aligned temporal-visual pairs together while pushing non-corresponding mini-batch samples apart (τ = 0.07). |
+| **Huber / Smooth L1** | `smooth_l1` / `huber` | `0.5(u − v)² if abs(u − v) < δ; else δ·abs(u − v) − 0.5δ²` | **Outlier Robustness:** Quadratic loss near convergence (δ = 1.0), linear penalty for extreme macroeconomic price spikes. |
+| **Manhattan L1** | `l1` *(Original)* | `(1 / D) · Σ abs(u_d − v_d)` | Standard Mean Absolute Error distance across latent feature dimensions. |
+| **Mean Squared Error** | `mse` | `(1 / D) · Σ (u_d − v_d)²` | Strong quadratic penalty for large representation drifts. |
+| **KL Divergence** | `kl_div` | `Σ P(u/T) · log[ P(u/T) / Q(v/T) ] · T²` | Matches soft continuous probability distributions across projections (T = 2.0). |
 
 #### 2. Output Logits Distillation (L_logits)
 Synchronizes the trajectory generated by the student forecasting head ($y_{\text{time}}$) with the foundation teacher head ($y_{\text{teacher}}$):
@@ -258,6 +278,11 @@ $$
 ### 3.1 Repository Directory Structure
 ```
 CALF_GPT4TS/
+├── assets/                              # Architecture diagrams & visual documentation
+│   ├── architecture_dinov3.png          # System architecture block diagram
+│   ├── visual_comparison_dinov3_vs_gpt2.png # ViT vs 1D LLM comparison
+│   ├── tripartite_loss_diagram.png      # Composite tripartite loss formulation
+│   └── dashboard_preview.png            # CALF Studio trading cockpit preview
 ├── datasets/                            # Standard benchmarks & custom series
 │   ├── custom/                          # 15m Bitcoin dataset (BTCUSDT_15m_calf.csv)
 │   ├── ETT-small/                       # Standard electricity benchmarks (ETTh1, ETTh2, ETTm1, ETTm2)
@@ -281,7 +306,7 @@ CALF_GPT4TS/
 ├── frontend/                            # Web Client (HTML5 / Modern CSS / Chart.js)
 │   ├── index.html                       # Minimalist TradingView cockpit layout
 │   ├── style.css                        # Dark glassmorphism, responsive styling
-│   └── app.js                           # State manager, REST API client, Chart.js engine
+│   └── app.js                           # Bilingual state manager (VI/EN), REST API client
 ├── scripts/                             # Automated benchmarking & training scripts
 │   └── long_term_forecasting/
 │       ├── ETTh_DINOv3.sh               # ⭐ Comprehensive DINO-V3 + Cosine Loss benchmark (96->720)
