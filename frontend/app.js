@@ -15,10 +15,276 @@ let appState = {
   distillLoss: 'cosine',
   activeZoom: 'horizon',
   latestData: null,
-  selectedFileToUpload: null
+  selectedFileToUpload: null,
+  lang: localStorage.getItem('calf_lang') || 'vi'
 };
 
 let currentChart = null;
+
+// ==========================================================================
+// BILINGUAL TRANSLATION DICTIONARY (VI & EN)
+// ==========================================================================
+const TRANSLATIONS = {
+  vi: {
+    app_subtitle: "Dự báo Đa phương thức ViT & LLM",
+    status_cloud: "Đám mây 24/7 Sẵn sàng",
+    upload_btn: "Upload CSV",
+    side_title: "Dự Báo Giá Bitcoin",
+    settings_title: "Cài Đặt Dự Báo",
+    lbl_dataset: "Cặp tiền giao dịch",
+    lbl_horizon: "Thời gian dự báo trước",
+    btn_run_forecast: "Chạy Dự Báo AI",
+    kpi_title: "Hiệu Năng Mô Hình",
+    kpi_acc_label: "Độ Chính Xác",
+    kpi_mape_prefix: "Sai số MAPE:",
+    kpi_mda_label: "Đúng Xu Hướng",
+    kpi_mda_caption: "Chiều nến tiếp theo",
+    kpi_advantage_label: "So Với GPT-2",
+    kpi_advantage_caption: "Nhờ ViT DINO-V3",
+    kpi_mae_label: "Lệch Giá (MAE)",
+    adv_title: "Cấu Hình Nâng Cao",
+    lbl_teacher: "Giáo Viên ViT (Teacher)",
+    lbl_loss: "Hàm Chưng Cất Tri Thức",
+    lbl_lookback: "Quan Sát Quá Khứ (Lookback L)",
+    lbl_vit_align: "ViT Alignment:",
+    lbl_latency: "Độ trễ:",
+    tab_chart: "Đồ Thị Dự Báo",
+    tab_distill: "Chưng Cất ViT",
+    tab_table: "Bảng Số Liệu",
+    tab_benchmarks: "So Sánh Đa Khung",
+    zoom_100: "100 nến",
+    zoom_300: "300 nến",
+    zoom_horizon: "Vùng Dự Báo",
+    zoom_all: "Tất Cả",
+    btn_png: "PNG",
+    btn_csv: "CSV",
+    toggle_gt: "Giá Thực Tế",
+    toggle_calf: "AI CALF Dự Báo",
+    toggle_teacher: "Định Hướng ViT",
+    toggle_naive: "Mức Tham Chiếu",
+    toggle_conf: "Vùng An Toàn 95%",
+    distill_title_left: "Căn chỉnh Biểu diễn Đa tầng (Student vs Teacher ViT)",
+    distill_sub_left: "Độ suy giảm theo chiều sâu: &gamma; = 0.8 &bull; 6 Khối Transformer",
+    distill_title_right: "Mục tiêu Tối ưu Tripartite Loss",
+    distill_sub_right: "Kết hợp hàm mất mát 3 thành phần trong CALF",
+    loss_task_title: "Hồi Quy Có Giám Sát",
+    loss_task_desc: "Huấn luyện bám sát Ground Truth thực tế bằng hàm Smooth L1/MSE.",
+    loss_logits_title: "Đồng Bộ Logits",
+    loss_logits_desc: "Định hướng quỹ đạo dự báo của học sinh theo phân phối đầu ra của Foundation Model.",
+    loss_feat_title: "Chưng Cất Tầng Biểu Diễn Ẩn",
+    loss_feat_desc: "Khoảng cách Cosine có trọng số suy giảm hàm mũ qua các tầng biểu diễn ẩn:",
+    distill_weights: "Trọng số hiện hành: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong>",
+    table_summary: "Dữ liệu chi tiết 96 bước dự báo cho biến:",
+    table_search_ph: "Tìm theo bước hoặc ngày...",
+    th_step: "Bước #",
+    th_time: "Thời gian",
+    th_gt: "Ground Truth",
+    th_calf: "CALF Dự báo",
+    th_teacher: "Teacher ViT",
+    th_naive: "Naive Baseline",
+    th_abs_err: "Sai số tuyệt đối",
+    th_pct_err: "Sai số (%)",
+    th_status: "Trạng thái",
+    benchmarks_title: "So sánh Hiệu năng theo Đa Chân trời Dự báo (Multi-Horizons)",
+    benchmarks_desc: "Kiểm chứng độ bền vững của mô hình CALF khi mở rộng độ dài dự báo từ 96 đến 720 bước thời gian.",
+    th_b_horizon: "Horizon (pred_len)",
+    th_b_time: "Quy đổi Thời gian",
+    th_b_mda: "MDA (Xu hướng)",
+    th_b_adv: "Ưu thế vs GPT-2",
+    modal_title: "Tải Lên Bộ Dữ Liệu Tùy Biến (CSV)",
+    modal_desc: "Tải lên file chuỗi thời gian của bạn (.csv). Cột đầu tiên phải là mốc thời gian (date), theo sau là các kênh đặc trưng số.",
+    drop_prompt: "Kéo thả file .csv vào đây",
+    drop_subprompt: "hoặc bấm để duyệt file từ máy tính",
+    modal_cancel: "Hủy",
+    modal_upload: "Tải Lên & Chạy",
+    horizon_3d5: "3.5 ngày",
+    horizon_7d5: "7.5 ngày",
+    loader_executing: "Đang chưng cất tri thức đa phương thức CALF...",
+    chart_label_gt: "Giá Thực Tế (Ground Truth)",
+    chart_label_calf: "AI CALF Dự Báo (ViT + GPT-2)",
+    chart_label_teacher: "Định Hướng ViT (Teacher)",
+    chart_label_naive: "Mức Tham Chiếu (Baseline)",
+    chart_label_ci: "Vùng An Toàn 95% (Tin Cậy)",
+    table_status_low: "Sai số thấp &le; 1.5%",
+    table_status_normal: "Hội tụ tốt",
+    badge_running: "Đang chạy",
+    badge_reference: "1.0x (Tham chiếu)"
+  },
+  en: {
+    app_subtitle: "Cross-modal ViT & LLM Forecasting",
+    status_cloud: "Cloud 24/7 Active",
+    upload_btn: "Upload CSV",
+    side_title: "Bitcoin Price Forecast",
+    settings_title: "Forecast Settings",
+    lbl_dataset: "Trading Asset / Pair",
+    lbl_horizon: "Forecast Horizon Ahead",
+    btn_run_forecast: "Run AI Forecast",
+    kpi_title: "Model Performance",
+    kpi_acc_label: "AI Accuracy",
+    kpi_mape_prefix: "MAPE Error:",
+    kpi_mda_label: "Directional Match",
+    kpi_mda_caption: "Next candle trend",
+    kpi_advantage_label: "vs Vanilla GPT-2",
+    kpi_advantage_caption: "Powered by DINO-V3 ViT",
+    kpi_mae_label: "Price Deviation (MAE)",
+    adv_title: "Advanced Model Settings",
+    lbl_teacher: "ViT Teacher Backbone",
+    lbl_loss: "Distillation Loss Function",
+    lbl_lookback: "Lookback Window (L)",
+    lbl_vit_align: "ViT Alignment:",
+    lbl_latency: "Latency:",
+    tab_chart: "Forecast Chart",
+    tab_distill: "ViT Distillation",
+    tab_table: "Data Table",
+    tab_benchmarks: "Multi-Horizon Benchmarks",
+    zoom_100: "100 Candles",
+    zoom_300: "300 Candles",
+    zoom_horizon: "Forecast Horizon",
+    zoom_all: "All Data",
+    btn_png: "PNG",
+    btn_csv: "CSV",
+    toggle_gt: "Ground Truth",
+    toggle_calf: "CALF Forecast",
+    toggle_teacher: "ViT Guidance",
+    toggle_naive: "Baseline Reference",
+    toggle_conf: "95% Confidence Band",
+    distill_title_left: "Multi-Layer Feature Alignment (Student vs Teacher ViT)",
+    distill_sub_left: "Exponential Depth Decay: &gamma; = 0.8 &bull; 6 Transformer Blocks",
+    distill_title_right: "Tripartite Optimization Objective",
+    distill_sub_right: "Composite multi-task distillation loss in CALF",
+    loss_task_title: "Supervised Regression",
+    loss_task_desc: "Trains forecasts to fit ground truth targets via Smooth L1/MSE.",
+    loss_logits_title: "Logits Matching",
+    loss_logits_desc: "Aligns student output probability trajectory with foundation model predictions.",
+    loss_feat_title: "Intermediate Representation Distillation",
+    loss_feat_desc: "Exponentially-decayed Cosine feature distance across latent layers:",
+    distill_weights: "Active weights: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong>",
+    table_summary: "Detailed step-by-step forecast for variable:",
+    table_search_ph: "Search by step or timestamp...",
+    th_step: "Step #",
+    th_time: "Timestamp",
+    th_gt: "Ground Truth",
+    th_calf: "CALF Forecast",
+    th_teacher: "Teacher ViT",
+    th_naive: "Naive Baseline",
+    th_abs_err: "Abs Error",
+    th_pct_err: "Error (%)",
+    th_status: "Status",
+    benchmarks_title: "Multi-Horizon Scaling Benchmark Evaluation",
+    benchmarks_desc: "Verifying CALF's robustness across multi-step prediction horizons from 96 to 720 timesteps.",
+    th_b_horizon: "Horizon (pred_len)",
+    th_b_time: "Time Equivalent",
+    th_b_mda: "MDA (Trend)",
+    th_b_adv: "Advantage vs GPT-2",
+    modal_title: "Upload Custom Time-Series Dataset (CSV)",
+    modal_desc: "Upload your time-series CSV file. The first column must be timestamps (date), followed by numeric feature channels.",
+    drop_prompt: "Drag and drop your .csv file here",
+    drop_subprompt: "or click to browse from your computer",
+    modal_cancel: "Cancel",
+    modal_upload: "Upload & Analyze",
+    horizon_3d5: "3.5 Days",
+    horizon_7d5: "7.5 Days",
+    loader_executing: "Executing CALF Cross-Modal Distillation...",
+    chart_label_gt: "Ground Truth (Actual Price)",
+    chart_label_calf: "CALF Forecast (ViT + GPT-2)",
+    chart_label_teacher: "ViT Guidance (Teacher)",
+    chart_label_naive: "Baseline Reference",
+    chart_label_ci: "95% Confidence Band",
+    table_status_low: "Low Error &le; 1.5%",
+    table_status_normal: "Well Converged",
+    badge_running: "Active",
+    badge_reference: "1.0x (Reference)"
+  }
+};
+
+function t(key) {
+  const lang = appState.lang || 'vi';
+  return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || (TRANSLATIONS['vi'] && TRANSLATIONS['vi'][key]) || key;
+}
+
+function updatePipelinePill() {
+  const compactTrack = document.getElementById('compact-pipeline-track');
+  if (!compactTrack) return;
+  const teacher = appState.backbone === 'dinov3' ? 'ViT DINO-V3' : 'GPT-2 LLM';
+  const hours = (appState.predLen * 15) / 60;
+  const unitStr = (appState.lang === 'vi') ? 'nến' : 'candles';
+  compactTrack.innerHTML = `${teacher} &rarr; GPT-2 (${hours}h / ${appState.predLen} ${unitStr})`;
+}
+
+function updateHorizonLabel() {
+  const horizonLabel = document.getElementById('lbl-horizon-steps');
+  if (!horizonLabel) return;
+  const hours = (appState.predLen * 15) / 60;
+  const unitStr = (appState.lang === 'vi') ? 'nến' : 'candles';
+  horizonLabel.textContent = `${hours}h (${appState.predLen} ${unitStr})`;
+}
+
+function applyLanguage(lang) {
+  appState.lang = lang;
+  localStorage.setItem('calf_lang', lang);
+  document.documentElement.lang = lang;
+
+  // Toggle active button in language switcher
+  const btnVi = document.getElementById('btn-lang-vi');
+  const btnEn = document.getElementById('btn-lang-en');
+  if (btnVi && btnEn) {
+    if (lang === 'vi') {
+      btnVi.classList.add('active');
+      btnEn.classList.remove('active');
+    } else {
+      btnEn.classList.add('active');
+      btnVi.classList.remove('active');
+    }
+  }
+
+  // Update static text elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (key && TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) {
+      el.innerHTML = TRANSLATIONS[lang][key];
+    }
+  });
+
+  // Update placeholders with data-i18n-placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (key && TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) {
+      el.setAttribute('placeholder', TRANSLATIONS[lang][key]);
+    }
+  });
+
+  // Update dynamic pipeline and horizon labels
+  updateHorizonLabel();
+  updatePipelinePill();
+
+  // Update Chart labels if active
+  if (currentChart && currentChart.data && currentChart.data.datasets && currentChart.data.datasets.length >= 6) {
+    currentChart.data.datasets[0].label = t('chart_label_gt');
+    currentChart.data.datasets[1].label = t('chart_label_calf');
+    currentChart.data.datasets[2].label = t('chart_label_teacher');
+    currentChart.data.datasets[3].label = t('chart_label_naive');
+    currentChart.data.datasets[5].label = t('chart_label_ci');
+    currentChart.update('none');
+  }
+
+  // Refresh table and benchmarks if data is already loaded
+  if (appState.latestData) {
+    if (appState.latestData.table_rows) renderForecastTable(appState.latestData.table_rows);
+    if (appState.latestData.benchmarks) renderHorizonBenchmarks(appState.latestData.benchmarks);
+  }
+}
+
+function setupLanguageSwitcher() {
+  const btnVi = document.getElementById('btn-lang-vi');
+  const btnEn = document.getElementById('btn-lang-en');
+  if (btnVi) {
+    btnVi.addEventListener('click', () => applyLanguage('vi'));
+  }
+  if (btnEn) {
+    btnEn.addEventListener('click', () => applyLanguage('en'));
+  }
+  applyLanguage(appState.lang);
+}
 
 // ==========================================================================
 // 1. LIFECYCLE & INITIALIZATION
@@ -26,6 +292,7 @@ let currentChart = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupTheme();
+  setupLanguageSwitcher();
   setupEventListeners();
   setupModalHandlers();
   setupTabs();
@@ -387,7 +654,7 @@ function renderChartWithZoom(zoomPreset) {
       datasets: [
         // 0: Ground Truth
         {
-          label: 'Ground Truth (Thực tế)',
+          label: t('chart_label_gt'),
           data: groundTruth,
           borderColor: '#f97316',
           backgroundColor: 'transparent',
@@ -399,7 +666,7 @@ function renderChartWithZoom(zoomPreset) {
         },
         // 1: CALF Student Forecast
         {
-          label: 'CALF Student Forecast',
+          label: t('chart_label_calf'),
           data: prediction,
           borderColor: '#2563eb',
           backgroundColor: 'transparent',
@@ -411,7 +678,7 @@ function renderChartWithZoom(zoomPreset) {
         },
         // 2: Teacher Guidance (DINO-V3/GPT-2)
         {
-          label: 'Teacher Guidance (ViT/LLM)',
+          label: t('chart_label_teacher'),
           data: teacherGuidance,
           borderColor: '#9333ea',
           backgroundColor: 'transparent',
@@ -424,7 +691,7 @@ function renderChartWithZoom(zoomPreset) {
         },
         // 3: Naive Baseline (Persistence)
         {
-          label: 'Naive Baseline (Persistence)',
+          label: t('chart_label_naive'),
           data: naiveBaseline,
           borderColor: '#64748b',
           backgroundColor: 'transparent',
@@ -447,7 +714,7 @@ function renderChartWithZoom(zoomPreset) {
         },
         // 5: 95% Confidence Interval Lower
         {
-          label: '95% Confidence Band',
+          label: t('chart_label_ci'),
           data: lowerBound,
           borderColor: 'transparent',
           backgroundColor: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(37, 99, 235, 0.05)',
@@ -476,13 +743,15 @@ function renderChartWithZoom(zoomPreset) {
           callbacks: {
             title: (items) => {
               const idx = items[0].dataIndex;
-              const raw = timestamps[idx] || `Bước ${idx}`;
+              const raw = timestamps[idx] || (appState.lang === 'vi' ? `Bước ${idx}` : `Step ${idx}`);
               const parts = String(raw).trim().split(' ');
               if (parts.length >= 2) {
                 const dateParts = parts[0].split('-');
                 const timeParts = parts[1].split(':');
                 if (dateParts.length === 3 && timeParts.length >= 2) {
-                  return `Thời điểm: ${timeParts[0]}:${timeParts[1]} ngày ${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                  return appState.lang === 'vi'
+                    ? `Thời điểm: ${timeParts[0]}:${timeParts[1]} (${dateParts[2]}/${dateParts[1]}/${dateParts[0]})`
+                    : `Time: ${timeParts[0]}:${timeParts[1]} (${dateParts[0]}-${dateParts[1]}-${dateParts[2]})`;
                 }
               }
               return raw;
@@ -502,7 +771,8 @@ function renderChartWithZoom(zoomPreset) {
               if (gt != null && pred != null) {
                 const diff = Math.abs(gt - pred);
                 const pct = ((diff / Math.max(Math.abs(gt), 0.001)) * 100).toFixed(2);
-                return `Sai số tuyệt đối: ${formatNumber(diff, 2)} ${unit} (${pct}%)`;
+                const errLabel = appState.lang === 'vi' ? 'Sai số tuyệt đối' : 'Absolute error';
+                return `${errLabel}: ${formatNumber(diff, 2)} ${unit} (${pct}%)`;
               }
               return '';
             }
@@ -619,15 +889,19 @@ function renderForecastTable(rows) {
   const unit = getActiveUnit();
 
   if (!rows || rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-secondary);">Không có dữ liệu bước dự báo. Nhấn 'Run Forecast' để tính toán.</td></tr>`;
+    const emptyMsg = appState.lang === 'vi'
+      ? "Không có dữ liệu bước dự báo. Nhấn 'Chạy Dự Báo AI' để tính toán."
+      : "No forecast steps available. Click 'Run AI Forecast' to evaluate.";
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-secondary);">${emptyMsg}</td></tr>`;
     return;
   }
 
   tbody.innerHTML = rows.map(r => {
     const isLow = r.is_low_error;
+    const badgeText = isLow ? t('table_status_low') : t('table_status_normal');
     const badgeHtml = isLow
-      ? `<span class="badge badge-low-err">Sai số thấp &le; 1.5%</span>`
-      : `<span class="badge badge-normal-err">Hội tụ tốt</span>`;
+      ? `<span class="badge badge-low-err">${badgeText}</span>`
+      : `<span class="badge badge-normal-err">${badgeText}</span>`;
 
     return `
       <tr data-date="${r.date}" data-step="${r.step}">
@@ -679,21 +953,21 @@ function renderHorizonBenchmarks(benchmarks) {
   }
 
   const timeMap = {
-    96: '24 Giờ (1 Ngày)',
-    192: '48 Giờ (2 Ngày)',
-    336: '84 Giờ (3.5 Ngày)',
-    720: '180 Giờ (7.5 Ngày)'
+    96: appState.lang === 'vi' ? '24 Giờ (1 Ngày)' : '24 Hours (1 Day)',
+    192: appState.lang === 'vi' ? '48 Giờ (2 Ngày)' : '48 Hours (2 Days)',
+    336: appState.lang === 'vi' ? '84 Giờ (3.5 Ngày)' : '84 Hours (3.5 Days)',
+    720: appState.lang === 'vi' ? '180 Giờ (7.5 Ngày)' : '180 Hours (7.5 Days)'
   };
 
   tbody.innerHTML = benchmarks.map(b => {
     const isActive = b.horizon === appState.predLen || b.is_active;
-    const timeStr = timeMap[b.horizon] || `${b.horizon} bước`;
-    const adv = b.advantage || (appState.backbone === 'dinov3' ? '+14.8% vs GPT-2' : '1.0x (Reference)');
-    const isBaseline = adv.includes('Baseline') || adv.includes('Reference') || adv === 'N/A';
+    const timeStr = timeMap[b.horizon] || `${b.horizon} ${appState.lang === 'vi' ? 'bước' : 'steps'}`;
+    const adv = b.advantage || (appState.backbone === 'dinov3' ? '+14.8% vs GPT-2' : t('badge_reference'));
+    const isBaseline = adv.includes('Baseline') || adv.includes('Reference') || adv.includes('Tham chiếu') || adv === 'N/A';
 
     return `
       <tr class="${isActive ? 'active-benchmark' : ''}">
-        <td><strong>${b.horizon} timesteps</strong> ${isActive ? '<span class="active-pill">Đang chạy</span>' : ''}</td>
+        <td><strong>${b.horizon} timesteps</strong> ${isActive ? `<span class="active-pill">${t('badge_running')}</span>` : ''}</td>
         <td>${timeStr}</td>
         <td><code>${formatNumber(b.mae, 2)} ${unit}</code></td>
         <td><code>${formatNumber(b.rmse, 2)} ${unit}</code></td>
@@ -866,23 +1140,8 @@ function setupEventListeners() {
       const len = parseInt(pill.getAttribute('data-len')) || 96;
       appState.predLen = len;
 
-      const horizonLabel = document.getElementById('lbl-horizon-steps');
-      if (horizonLabel) {
-        const hours = (len * 15) / 60;
-        horizonLabel.textContent = `${hours} giờ tới (${len} nến)`;
-      }
-
-      const pipelineHorizon = document.getElementById('pipeline-horizon-text');
-      if (pipelineHorizon) {
-        pipelineHorizon.textContent = `4. Đường Giá & Dải An Toàn (${len} nến)`;
-      }
-
-      const compactTrack = document.getElementById('compact-pipeline-track');
-      if (compactTrack) {
-        const teacher = appState.backbone === 'dinov3' ? 'ViT DINO-V3' : 'GPT-2 LLM';
-        const hours = (len * 15) / 60;
-        compactTrack.innerHTML = `${teacher} &rarr; GPT-2 (${hours}h / ${len} nến)`;
-      }
+      updateHorizonLabel();
+      updatePipelinePill();
 
       triggerForecast();
     });
@@ -906,13 +1165,7 @@ function setupEventListeners() {
         if (pipelineTeacher) pipelineTeacher.textContent = '2. AI Ngôn Ngữ (GPT-2 LLM)';
       }
 
-      const compactTrack = document.getElementById('compact-pipeline-track');
-      if (compactTrack) {
-        const teacher = e.target.value === 'dinov3' ? 'ViT DINO-V3' : 'GPT-2 LLM';
-        const hours = (appState.predLen * 15) / 60;
-        compactTrack.innerHTML = `${teacher} &rarr; GPT-2 (${hours}h / ${appState.predLen} nến)`;
-      }
-
+      updatePipelinePill();
       triggerForecast();
     });
   }

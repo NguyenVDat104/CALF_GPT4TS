@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2.4.0">
+  <link rel="stylesheet" href="style.css?v=2.5.0">
   <!-- Chart.js for high performance time series rendering -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -23,18 +23,25 @@
       </div>
       <div class="brand-title-group">
         <h1 class="app-title">CALF Studio</h1>
-        <span class="app-subtitle">Cross-modal ViT & LLM Forecasting</span>
+        <span class="app-subtitle" data-i18n="app_subtitle">Cross-modal ViT & LLM Forecasting</span>
       </div>
       <span class="status-pill success">
-        <span class="pulse-dot"></span> Cloud 24/7 Active
+        <span class="pulse-dot"></span> <span data-i18n="status_cloud">Cloud 24/7 Active</span>
       </span>
       <span class="model-badge" id="header-model-badge">DINO-V3 Bi-directional ViT</span>
     </div>
 
     <div class="header-right">
+      <!-- LANGUAGE SWITCHER (VI / EN) -->
+      <div class="lang-switch" id="lang-switch" role="group" aria-label="Language Selector">
+        <button type="button" class="lang-btn active" data-lang="vi" id="btn-lang-vi" title="Tiếng Việt">VI</button>
+        <span class="lang-divider">|</span>
+        <button type="button" class="lang-btn" data-lang="en" id="btn-lang-en" title="English">EN</button>
+      </div>
+
       <button class="header-btn" id="btn-open-upload" title="Upload new CSV dataset">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        <span>Upload CSV</span>
+        <span data-i18n="upload_btn">Upload CSV</span>
       </button>
 
       <button class="icon-btn" id="theme-toggle" title="Toggle Light / Dark mode" aria-label="Toggle Theme">
@@ -60,7 +67,7 @@
         <div class="heading-title-row">
           <div class="heading-brand">
             <span class="algo-pill">CALF AI STUDIO</span>
-            <h2>Dự Báo Giá Bitcoin</h2>
+            <h2 data-i18n="side_title">Dự Báo Giá Bitcoin</h2>
           </div>
           <button class="icon-btn collapse-btn" id="btn-collapse-sidebar" title="Thu gọn thanh điều khiển" aria-label="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -71,12 +78,12 @@
       <!-- SECTION 1: CẤU HÌNH DỰ BÁO (CONTROLS) -->
       <section class="algo-pillar-card primary-control-card">
         <div class="pillar-header-clean">
-          <h3 class="pillar-title-clean">Cài Đặt Dự Báo</h3>
+          <h3 class="pillar-title-clean" data-i18n="settings_title">Cài Đặt Dự Báo</h3>
         </div>
 
         <div class="pillar-body">
           <div class="side-form-group">
-            <label class="side-label" for="dataset-select">Cặp tiền giao dịch</label>
+            <label class="side-label" for="dataset-select" data-i18n="lbl_dataset">Cặp tiền giao dịch</label>
             <select class="side-control" id="dataset-select">
               <option value="BTCUSDT_15m_calf.csv" selected>🪙 BTC/USDT (Khung 15m)</option>
               <option value="electricity.csv">⚡ Electricity Benchmark</option>
@@ -91,14 +98,14 @@
           <!-- Horizon Selector -->
           <div class="side-form-group">
             <div class="label-with-meta">
-              <label class="side-label">Thời gian dự báo trước</label>
+              <label class="side-label" data-i18n="lbl_horizon">Thời gian dự báo trước</label>
               <span class="meta-tag" id="lbl-horizon-steps">24h (96 nến)</span>
             </div>
             <div class="horizon-pills" id="horizon-pills">
               <button type="button" class="horizon-pill active" data-len="96">24h</button>
               <button type="button" class="horizon-pill" data-len="192">48h</button>
-              <button type="button" class="horizon-pill" data-len="336">3.5 ngày</button>
-              <button type="button" class="horizon-pill" data-len="720">7.5 ngày</button>
+              <button type="button" class="horizon-pill" data-len="336" data-i18n="horizon_3d5">3.5 ngày</button>
+              <button type="button" class="horizon-pill" data-len="720" data-i18n="horizon_7d5">7.5 ngày</button>
             </div>
           </div>
 
@@ -106,7 +113,7 @@
           <button class="primary-run-btn hero-cta-btn" id="btn-run-forecast">
             <div class="btn-spinner" id="btn-spinner" style="display:none;"></div>
             <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span class="btn-text" id="btn-text">Chạy Dự Báo AI</span>
+            <span class="btn-text" id="btn-text" data-i18n="btn_run_forecast">Chạy Dự Báo AI</span>
           </button>
         </div>
       </section>
@@ -114,7 +121,7 @@
       <!-- SECTION 2: KẾT QUẢ ĐÁNH GIÁ (KEY METRICS - TỐI GIẢN & RÕ RÀNG) -->
       <section class="algo-pillar-card results-card">
         <div class="pillar-header-clean">
-          <h3 class="pillar-title-clean">Hiệu Năng Mô Hình</h3>
+          <h3 class="pillar-title-clean" data-i18n="kpi_title">Hiệu Năng Mô Hình</h3>
         </div>
 
         <div class="pillar-body">
@@ -122,28 +129,28 @@
             
             <!-- Card 1: Độ Chính Xác AI -->
             <div class="kpi-tile primary-tile" title="Tỷ lệ dự đoán chuẩn xác của mô hình">
-              <span class="tile-label">Độ Chính Xác</span>
+              <span class="tile-label" data-i18n="kpi_acc_label">Độ Chính Xác</span>
               <div class="tile-value text-primary" id="val-accuracy">99.85%</div>
-              <span class="tile-caption">MAPE: <strong id="val-mape">0.15%</strong></span>
+              <span class="tile-caption"><span data-i18n="kpi_mape_prefix">Sai số MAPE:</span> <strong id="val-mape">0.15%</strong></span>
             </div>
 
             <!-- Card 2: Bắt Đúng Xu Hướng -->
             <div class="kpi-tile success-tile" title="Tỷ lệ đoán đúng chiều tăng hoặc giảm">
-              <span class="tile-label">Đúng Xu Hướng</span>
+              <span class="tile-label" data-i18n="kpi_mda_label">Đúng Xu Hướng</span>
               <div class="tile-value text-success" id="val-mda">94.74%</div>
-              <span class="tile-caption">Chiều nến tiếp theo</span>
+              <span class="tile-caption" data-i18n="kpi_mda_caption">Chiều nến tiếp theo</span>
             </div>
 
             <!-- Card 3: So Với GPT-2 Thuần -->
             <div class="kpi-tile accent-tile" title="Mức độ cải thiện so với mô hình ngôn ngữ thông thường">
-              <span class="tile-label">So Với GPT-2</span>
+              <span class="tile-label" data-i18n="kpi_advantage_label">So Với GPT-2</span>
               <div class="tile-value text-accent" id="val-advantage">+14.8%</div>
-              <span class="tile-caption">Nhờ ViT DINO-V3</span>
+              <span class="tile-caption" data-i18n="kpi_advantage_caption">Nhờ ViT DINO-V3</span>
             </div>
 
             <!-- Card 4: Biên Độ Lệch Giá (MAE) -->
             <div class="kpi-tile" title="Biên độ chênh lệch giá bình quân">
-              <span class="tile-label">Lệch Giá (MAE)</span>
+              <span class="tile-label" data-i18n="kpi_mae_label">Lệch Giá (MAE)</span>
               <div class="tile-value-combo">
                 <span id="val-mae">131.41 USDT</span>
               </div>
@@ -159,14 +166,14 @@
         <summary class="accordion-summary">
           <div class="accordion-title-left">
             <span class="accordion-icon">⚙️</span>
-            <span class="accordion-heading">Cấu Hình Nâng Cao</span>
+            <span class="accordion-heading" data-i18n="adv_title">Cấu Hình Nâng Cao</span>
           </div>
           <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </summary>
 
         <div class="accordion-content">
           <div class="side-form-group">
-            <label class="side-label" for="backbone-select">Giáo Viên ViT (Teacher)</label>
+            <label class="side-label" for="backbone-select" data-i18n="lbl_teacher">Giáo Viên ViT (Teacher)</label>
             <select class="side-control" id="backbone-select">
               <option value="dinov3" selected>DINO-V3 ViT (AI Thị Giác Hai Chiều)</option>
               <option value="gpt2">GPT-2 LLM (AI Ngôn Ngữ)</option>
@@ -174,7 +181,7 @@
           </div>
 
           <div class="side-form-group">
-            <label class="side-label" for="distill-loss-select">Hàm Chưng Cất Tri Thức</label>
+            <label class="side-label" for="distill-loss-select" data-i18n="lbl_loss">Hàm Chưng Cất Tri Thức</label>
             <select class="side-control" id="distill-loss-select">
               <option value="cosine" selected>Cosine Similarity (&gamma;=0.8 Decay)</option>
               <option value="contrastive">Contrastive InfoNCE</option>
@@ -184,14 +191,14 @@
           </div>
 
           <div class="side-form-group">
-            <label class="side-label" for="seq-len-input">Quan Sát Quá Khứ (Lookback L)</label>
+            <label class="side-label" for="seq-len-input" data-i18n="lbl_lookback">Quan Sát Quá Khứ (Lookback L)</label>
             <input type="number" class="side-control" id="seq-len-input" value="96" min="24" max="720" step="24">
           </div>
 
           <div class="tech-metrics-inline">
-            <div class="tech-metric-item">ViT Alignment: <strong id="val-alignment">97.4%</strong></div>
+            <div class="tech-metric-item"><span data-i18n="lbl_vit_align">ViT Alignment:</span> <strong id="val-alignment">97.4%</strong></div>
             <div class="tech-metric-item">&Lscr;<sub>feat</sub>: <strong id="val-distill-loss">0.0028</strong> <span id="tag-distill-loss">COS</span></div>
-            <div class="tech-metric-item">Độ trễ: <strong id="val-latency">42 ms</strong></div>
+            <div class="tech-metric-item"><span data-i18n="lbl_latency">Độ trễ:</span> <strong id="val-latency">42 ms</strong></div>
           </div>
         </div>
       </details>
@@ -211,16 +218,16 @@
           <!-- STAGE VIEWS SWITCHER -->
           <nav class="stage-nav-tabs">
             <button class="stage-tab active" data-view="view-chart" id="tab-btn-chart">
-              <span>Đồ Thị Dự Báo</span>
+              <span data-i18n="tab_chart">Đồ Thị Dự Báo</span>
             </button>
             <button class="stage-tab" data-view="view-heatmap" id="tab-btn-heatmap">
-              <span>Chưng Cất ViT</span>
+              <span data-i18n="tab_distill">Chưng Cất ViT</span>
             </button>
             <button class="stage-tab" data-view="view-table" id="tab-btn-table">
-              <span>Bảng Số Liệu</span>
+              <span data-i18n="tab_table">Bảng Số Liệu</span>
             </button>
             <button class="stage-tab" data-view="view-benchmarks" id="tab-btn-benchmarks">
-              <span>So Sánh Đa Khung</span>
+              <span data-i18n="tab_benchmarks">So Sánh Đa Khung</span>
             </button>
           </nav>
         </div>
@@ -228,20 +235,20 @@
         <div class="stage-toolbar-right">
           <!-- ZOOM PRESETS -->
           <div class="zoom-btn-group" id="zoom-controls">
-            <button class="zoom-btn" id="zoom-100">100 nến</button>
-            <button class="zoom-btn" id="zoom-300">300 nến</button>
-            <button class="zoom-btn active" id="zoom-horizon">Vùng Dự Báo</button>
-            <button class="zoom-btn" id="zoom-all">Tất Cả</button>
+            <button class="zoom-btn" id="zoom-100" data-i18n="zoom_100">100 nến</button>
+            <button class="zoom-btn" id="zoom-300" data-i18n="zoom_300">300 nến</button>
+            <button class="zoom-btn active" id="zoom-horizon" data-i18n="zoom_horizon">Vùng Dự Báo</button>
+            <button class="zoom-btn" id="zoom-all" data-i18n="zoom_all">Tất Cả</button>
           </div>
 
           <!-- ACTIONS -->
           <button class="stage-action-btn" id="btn-save-chart" title="Lưu biểu đồ dưới dạng ảnh PNG">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>PNG</span>
+            <span data-i18n="btn_png">PNG</span>
           </button>
           <button class="stage-action-btn" id="btn-export-csv" title="Tải xuống tệp CSV số liệu">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span>CSV</span>
+            <span data-i18n="btn_csv">CSV</span>
           </button>
         </div>
       </div>
@@ -252,27 +259,27 @@
           <label class="layer-toggle-chip" title="Dữ liệu giá thực tế trong quá khứ">
             <input type="checkbox" id="toggle-ground-truth" checked>
             <span class="chip-indicator dot-orange"></span>
-            <span>Giá Thực Tế</span>
+            <span data-i18n="toggle_gt">Giá Thực Tế</span>
           </label>
           <label class="layer-toggle-chip" title="Đường giá dự báo tương lai của AI CALF">
             <input type="checkbox" id="toggle-calf" checked>
             <span class="chip-indicator dot-blue"></span>
-            <span>AI CALF Dự Báo</span>
+            <span data-i18n="toggle_calf">AI CALF Dự Báo</span>
           </label>
           <label class="layer-toggle-chip" title="Định hướng vĩ mô từ AI Thị giác DINO-V3">
             <input type="checkbox" id="toggle-teacher" checked>
             <span class="chip-indicator dot-purple"></span>
-            <span>Định Hướng ViT</span>
+            <span data-i18n="toggle_teacher">Định Hướng ViT</span>
           </label>
           <label class="layer-toggle-chip" title="Đường tham chiếu cố định giá gần nhất">
             <input type="checkbox" id="toggle-naive">
             <span class="chip-indicator dot-naive"></span>
-            <span>Mức Tham Chiếu</span>
+            <span data-i18n="toggle_naive">Mức Tham Chiếu</span>
           </label>
           <label class="layer-toggle-chip" title="Vùng tin cậy xác suất 95%">
             <input type="checkbox" id="toggle-confidence" checked>
             <span class="chip-indicator dot-gray"></span>
-            <span>Vùng An Toàn 95%</span>
+            <span data-i18n="toggle_conf">Vùng An Toàn 95%</span>
           </label>
         </div>
 
@@ -292,7 +299,7 @@
             <canvas id="forecastChart"></canvas>
             <div class="chart-loading-overlay" id="chart-loader" style="display:none;">
               <div class="spinner-large"></div>
-              <span class="loader-text">Executing CALF Cross-Modal Distillation...</span>
+              <span class="loader-text" data-i18n="loader_executing">Executing CALF Cross-Modal Distillation...</span>
             </div>
           </div>
         </div>
@@ -304,8 +311,8 @@
               <!-- Left: Layer-wise representation matching bars -->
               <div class="distill-card">
                 <div class="distill-card-header">
-                  <h3 class="distill-title">Căn chỉnh Biểu diễn Đa tầng (Student vs Teacher ViT)</h3>
-                  <span class="distill-sub">Độ suy giảm theo chiều sâu: &gamma; = 0.8 &bull; 6 Khối Transformer</span>
+                  <h3 class="distill-title" data-i18n="distill_title_left">Căn chỉnh Biểu diễn Đa tầng (Student vs Teacher ViT)</h3>
+                  <span class="distill-sub" data-i18n="distill_sub_left">Độ suy giảm theo chiều sâu: &gamma; = 0.8 &bull; 6 Khối Transformer</span>
                 </div>
                 <div class="layer-bars-container" id="layer-bars-container">
                   <!-- Populated by JS -->
@@ -315,26 +322,26 @@
               <!-- Right: Mathematical formulation of Tripartite Loss -->
               <div class="distill-card">
                 <div class="distill-card-header">
-                  <h3 class="distill-title">Mục tiêu Tối ưu Tripartite Loss</h3>
-                  <span class="distill-sub">Kết hợp hàm mất mát 3 thành phần trong CALF</span>
+                  <h3 class="distill-title" data-i18n="distill_title_right">Mục tiêu Tối ưu Tripartite Loss</h3>
+                  <span class="distill-sub" data-i18n="distill_sub_right">Kết hợp hàm mất mát 3 thành phần trong CALF</span>
                 </div>
                 <div class="math-box">
                   <code>&Lscr;<sub>total</sub> = w<sub>task</sub>&Lscr;<sub>task</sub> + w<sub>logits</sub>&Lscr;<sub>logits</sub> + w<sub>feat</sub>&Lscr;<sub>feat</sub></code>
                 </div>
                 <ul class="loss-list">
                   <li>
-                    <strong class="text-blue">&Lscr;<sub>task</sub> (Supervised Regression):</strong> Huấn luyện bám sát Ground Truth thực tế bằng hàm Smooth L1/MSE.
+                    <strong class="text-blue">&Lscr;<sub>task</sub> (<span data-i18n="loss_task_title">Supervised Regression</span>):</strong> <span data-i18n="loss_task_desc">Huấn luyện bám sát Ground Truth thực tế bằng hàm Smooth L1/MSE.</span>
                   </li>
                   <li>
-                    <strong class="text-purple">&Lscr;<sub>logits</sub> (Logits Matching):</strong> Định hướng quỹ đạo dự báo của học sinh theo phân phối đầu ra của Foundation Model.
+                    <strong class="text-purple">&Lscr;<sub>logits</sub> (<span data-i18n="loss_logits_title">Logits Matching</span>):</strong> <span data-i18n="loss_logits_desc">Định hướng quỹ đạo dự báo của học sinh theo phân phối đầu ra của Foundation Model.</span>
                   </li>
                   <li>
-                    <strong class="text-amber">&Lscr;<sub>feat</sub> (Layer Representation Distillation):</strong> Khoảng cách Cosine có trọng số suy giảm hàm mũ qua các tầng biểu diễn ẩn:
+                    <strong class="text-amber">&Lscr;<sub>feat</sub> (<span data-i18n="loss_feat_title">Layer Representation Distillation</span>):</strong> <span data-i18n="loss_feat_desc">Khoảng cách Cosine có trọng số suy giảm hàm mũ qua các tầng biểu diễn ẩn:</span>
                     <div class="sub-formula"><code>&sum; (0.8)<sup>6-l</sup> &bull; (1 - cos(h<sub>time</sub><sup>(l)</sup>, h<sub>teacher</sub><sup>(l)</sup>))</code></div>
                   </li>
                 </ul>
                 <div class="active-weights-bar">
-                  <span>Trọng số hiện hành: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong></span>
+                  <span data-i18n="distill_weights">Trọng số hiện hành: <strong>w<sub>task</sub>=1.0 &bull; w<sub>logits</sub>=1.0 &bull; w<sub>feat</sub>=0.01</strong></span>
                 </div>
               </div>
             </div>
@@ -346,11 +353,11 @@
           <div class="table-pane-wrapper">
             <div class="table-pane-top">
               <div class="table-summary-info">
-                <span>Dữ liệu chi tiết <strong>96 bước dự báo</strong> cho biến: <strong id="lbl-table-var">close</strong></span>
+                <span data-i18n="table_summary">Dữ liệu chi tiết 96 bước dự báo cho biến:</span> <strong id="lbl-table-var">close</strong>
               </div>
               <div class="table-search-box">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" id="table-search" placeholder="Tìm theo bước hoặc ngày...">
+                <input type="text" id="table-search" placeholder="Tìm theo bước hoặc ngày..." data-i18n-placeholder="table_search_ph">
               </div>
             </div>
 
@@ -358,15 +365,15 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Bước #</th>
-                    <th>Thời gian</th>
-                    <th>Ground Truth</th>
-                    <th>CALF Dự báo</th>
-                    <th>Teacher ViT</th>
-                    <th>Naive Baseline</th>
-                    <th>Sai số tuyệt đối</th>
-                    <th>Sai số (%)</th>
-                    <th>Trạng thái</th>
+                    <th data-i18n="th_step">Bước #</th>
+                    <th data-i18n="th_time">Thời gian</th>
+                    <th data-i18n="th_gt">Ground Truth</th>
+                    <th data-i18n="th_calf">CALF Dự báo</th>
+                    <th data-i18n="th_teacher">Teacher ViT</th>
+                    <th data-i18n="th_naive">Naive Baseline</th>
+                    <th data-i18n="th_abs_err">Sai số tuyệt đối</th>
+                    <th data-i18n="th_pct_err">Sai số (%)</th>
+                    <th data-i18n="th_status">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody id="forecast-table-body">
@@ -381,21 +388,21 @@
         <div class="stage-view-panel" id="view-benchmarks">
           <div class="benchmarks-pane-wrapper">
             <div class="benchmarks-header">
-              <h3 class="benchmarks-title">So sánh Hiệu năng theo Đa Chân trời Dự báo (Multi-Horizons)</h3>
-              <p class="benchmarks-desc">Kiểm chứng độ bền vững của mô hình CALF khi mở rộng độ dài dự báo từ 96 đến 720 bước thời gian.</p>
+              <h3 class="benchmarks-title" data-i18n="benchmarks_title">So sánh Hiệu năng theo Đa Chân trời Dự báo (Multi-Horizons)</h3>
+              <p class="benchmarks-desc" data-i18n="benchmarks_desc">Kiểm chứng độ bền vững của mô hình CALF khi mở rộng độ dài dự báo từ 96 đến 720 bước thời gian.</p>
             </div>
             
             <div class="table-container">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Horizon (pred_len)</th>
-                    <th>Quy đổi Thời gian</th>
+                    <th data-i18n="th_b_horizon">Horizon (pred_len)</th>
+                    <th data-i18n="th_b_time">Quy đổi Thời gian</th>
                     <th>MAE</th>
                     <th>RMSE</th>
                     <th>MAPE</th>
-                    <th>MDA (Xu hướng)</th>
-                    <th>Ưu thế tương đối (vs GPT-2)</th>
+                    <th data-i18n="th_b_mda">MDA (Xu hướng)</th>
+                    <th data-i18n="th_b_adv">Ưu thế vs GPT-2</th>
                   </tr>
                 </thead>
                 <tbody id="horizon-benchmarks-body">
@@ -417,18 +424,18 @@
       <div class="modal-header">
         <div class="modal-title-row">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <h3 class="modal-title">Upload Custom Time-Series Dataset</h3>
+          <h3 class="modal-title" data-i18n="modal_title">Upload Custom Time-Series Dataset</h3>
         </div>
         <button class="modal-close" id="btn-close-modal">&times;</button>
       </div>
 
       <div class="modal-body">
-        <p class="modal-desc">Tải lên file chuỗi thời gian của bạn (.csv). Cột đầu tiên phải là mốc thời gian (<code>date</code>), theo sau là các kênh đặc trưng số.</p>
+        <p class="modal-desc" data-i18n="modal_desc">Tải lên file chuỗi thời gian của bạn (.csv). Cột đầu tiên phải là mốc thời gian (<code>date</code>), theo sau là các kênh đặc trưng số.</p>
         
         <div class="drop-zone" id="modal-drop-zone">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>
-          <span class="drop-prompt">Kéo thả file .csv vào đây</span>
-          <span class="drop-subprompt">hoặc bấm để duyệt file từ máy tính</span>
+          <span class="drop-prompt" data-i18n="drop_prompt">Kéo thả file .csv vào đây</span>
+          <span class="drop-subprompt" data-i18n="drop_subprompt">hoặc bấm để duyệt file từ máy tính</span>
           <input type="file" id="modal-file-input" accept=".csv" style="display:none;">
         </div>
 
@@ -440,12 +447,12 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-secondary" id="btn-cancel-upload">Cancel</button>
-        <button class="btn-primary" id="btn-submit-upload" disabled>Upload & Load</button>
+        <button class="btn-secondary" id="btn-cancel-upload" data-i18n="modal_cancel">Hủy</button>
+        <button class="btn-primary" id="btn-submit-upload" data-i18n="modal_upload" disabled>Tải Lên & Chạy</button>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=2.4.0"></script>
+  <script src="app.js?v=2.5.0"></script>
 </body>
 </html>

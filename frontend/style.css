@@ -194,6 +194,47 @@ button, input, select {
   gap: 12px;
 }
 
+/* Language Switcher */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2px 4px;
+  gap: 2px;
+}
+
+.lang-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+  line-height: 1;
+}
+
+.lang-btn:hover {
+  color: var(--text-primary);
+}
+
+.lang-btn.active {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.35);
+}
+
+.lang-divider {
+  color: var(--border-color);
+  font-size: 0.72rem;
+  user-select: none;
+  opacity: 0.6;
+}
+
 .header-btn {
   display: inline-flex;
   align-items: center;
