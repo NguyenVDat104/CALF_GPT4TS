@@ -316,15 +316,17 @@ def run_calf_inference(
 # API ENDPOINTS
 # ==========================================================================
 
+@app.get("/health")
 @app.get("/api/status")
 async def get_status():
     """Health check and model status."""
     return {
-        "status": "online",
+        "status": "healthy",
         "protocol": "HTTPS (SSL/TLS)",
         "framework": "CALF + DINO-V3",
         "custom_dataset_dir": CUSTOM_DATASETS_DIR
     }
+
 
 @app.get("/api/datasets")
 async def list_datasets():
